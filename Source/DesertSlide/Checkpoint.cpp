@@ -4,6 +4,7 @@
 #include "Checkpoint.h"
 
 #include "DesertSlideGameInstance.h"
+#include "RaceManagerSubsystem.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -17,8 +18,6 @@ ACheckpoint::ACheckpoint()
 	
 	RootComponent = TriggerVolume;
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnTriggerOverlap);
-    
-
 }
 
 // Called when the game starts or when spawned
@@ -44,7 +43,9 @@ void ACheckpoint::OnTriggerOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 {
 	if (GameInstance)
 	{
-		GameInstance->CheckPointCrossed();
+		URaceManagerSubsystem* RaceManager = GameInstance->GetSubsystem<URaceManagerSubsystem>();
+		RaceManager->CheckpointCrossed(this, OtherActor);
 	}
+	
 }
 
