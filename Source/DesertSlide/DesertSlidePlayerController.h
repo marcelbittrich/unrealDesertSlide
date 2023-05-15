@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class ADesertSlidePlayerController : public APlayerController
+class DESERTSLIDE_API ADesertSlidePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
