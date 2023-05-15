@@ -3,6 +3,7 @@
 
 #include "Checkpoint.h"
 
+#include "DesertSlideGameInstance.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -24,7 +25,12 @@ ACheckpoint::ACheckpoint()
 void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	GameInstance = Cast<UDesertSlideGameInstance>(GetGameInstance());
+	if (!GameInstance)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Did not find GameInstance"));
+	}
 }
 
 // Called every frame
@@ -36,6 +42,9 @@ void ACheckpoint::Tick(float DeltaTime)
 
 void ACheckpoint::OnTriggerOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Checkpoint triggered!"));
+	if (GameInstance)
+	{
+		GameInstance->CheckPointCrossed();
+	}
 }
 
