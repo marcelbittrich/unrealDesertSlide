@@ -3,8 +3,6 @@
 
 #include "Timings.h"
 
-#include <string>
-
 #include "Components/TextBlock.h"
 
 void UTimings::Setup()
@@ -17,8 +15,20 @@ void UTimings::Teardown()
 	this->RemoveFromParent();
 }
 
-void UTimings::SetGameTime(float Time)
+void UTimings::SetLapTimeText(float Time)
 {
-	FString GameTimeString = "GameTime:  " + FString::SanitizeFloat(Time);
-	GameTime->SetText(FText::FromString(GameTimeString));
+	FString LapTimeString = "Lap Time:  " + FString::SanitizeFloat(Time);
+	LapTimeText->SetText(FText::FromString(LapTimeString));
+}
+
+void UTimings::SetLastLapTimeText(float Time)
+{
+	FString LastLapTimeString = "Last Lap:  " + FString::SanitizeFloat(Time);
+	LastLapTimeText->SetText(FText::FromString(LastLapTimeString));
+}
+
+void UTimings::SetCurrentLapText(int CurrentLap, int MaxLaps)
+{
+	FString CurrentLapString = "Lap: " + FString::FromInt(CurrentLap) + " / " +  FString::FromInt(MaxLaps);
+	CurrentLapText->SetText(FText::FromString(CurrentLapString));
 }

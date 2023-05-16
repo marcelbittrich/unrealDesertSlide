@@ -59,6 +59,5 @@ void AStartFinish::OnTriggerOverlap(
 			UE_LOG(LogTemp, Warning, TEXT("StartFinish did not find RaceManager"));
 		}
 	}
-	
 }
 

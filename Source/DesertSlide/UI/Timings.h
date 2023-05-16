@@ -17,11 +17,18 @@ class DESERTSLIDE_API UTimings : public UUserWidget
 public:
 	void Setup();
 	void Teardown();
-	void SetGameTime(float GameTime);
+	
+	void SetLapTimeText(float Time);
+	void SetLastLapTimeText(float Time);
+	void SetCurrentLapText(int CurrentLap, int MaxLaps);
 	
 private:
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* GameTime;
+	class UTextBlock* LapTimeText;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* LastLapTimeText;
 
-	float GameTimeValue;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* CurrentLapText;
 };

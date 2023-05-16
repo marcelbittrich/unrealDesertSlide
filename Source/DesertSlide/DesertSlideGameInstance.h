@@ -18,22 +18,9 @@ class DESERTSLIDE_API UDesertSlideGameInstance : public UGameInstance
 	virtual void Init() override;
 	
 public:
-	UFUNCTION()
-	void CheckPointCrossed();
 
-	UFUNCTION(BlueprintCallable)
-	void AddTimingsUI();
 
-	UFUNCTION(BlueprintCallable)
-	void UpdateTimings();
 	
 private:
-	float RaceTime; 
 
-
-	UPROPERTY()
-	TSubclassOf<class UUserWidget> TimingsUIClass;
-	
-	UPROPERTY()
-	class UTimings* TimingsUI;
 };

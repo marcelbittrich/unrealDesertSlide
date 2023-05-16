@@ -15,7 +15,6 @@ ACheckpoint::ACheckpoint()
 
 	TriggerVolume = CreateDefaultSubobject<UBoxComponent>(FName("Trigger Area"));
     if (!TriggerVolume) return;
-	
 	RootComponent = TriggerVolume;
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnTriggerOverlap);
 }
