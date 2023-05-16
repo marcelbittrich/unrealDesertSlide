@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Checkpoint.generated.h"
+#include "StartFinish.generated.h"
 
 UCLASS()
-class DESERTSLIDE_API ACheckpoint : public AActor
+class DESERTSLIDE_API AStartFinish : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ACheckpoint();
+	AStartFinish();
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,4 +28,9 @@ private:
 
 	UFUNCTION()
 	void OnTriggerOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Behaviour", meta = (AllowPrivateAccess = "true"))
+	bool bStart;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Behaviour", meta = (AllowPrivateAccess = "true"))
+	bool bFinish;
 };

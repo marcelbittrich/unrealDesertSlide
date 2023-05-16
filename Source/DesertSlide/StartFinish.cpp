@@ -1,38 +1,38 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Checkpoint.h"
+#include "StartFinish.h"
 
 #include "DesertSlideGameInstance.h"
 #include "RaceManagerSubsystem.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
-ACheckpoint::ACheckpoint()
+AStartFinish::AStartFinish()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	TriggerVolume = CreateDefaultSubobject<UBoxComponent>(FName("Trigger Area"));
-    if (!TriggerVolume) return;
+	if (!TriggerVolume) return;
 	
 	RootComponent = TriggerVolume;
-	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnTriggerOverlap);
+	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &AStartFinish::OnTriggerOverlap);
 }
 
 // Called when the game starts or when spawned
-void ACheckpoint::BeginPlay()
+void AStartFinish::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	GameInstance = Cast<UDesertSlideGameInstance>(GetGameInstance());
 	if (!GameInstance)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Checkpoint did not find GameInstance"));
+		UE_LOG(LogTemp, Warning, TEXT("StartFinish did not find GameInstance"));
 	}
 }
 
-void ACheckpoint::OnTriggerOverlap(
+void AStartFinish::OnTriggerOverlap(
 	UPrimitiveComponent* OverlappedComp,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,
@@ -45,11 +45,18 @@ void ACheckpoint::OnTriggerOverlap(
 		URaceManagerSubsystem* RaceManager = GameInstance->GetSubsystem<URaceManagerSubsystem>();
 		if (RaceManager)
 		{
-			RaceManager->CheckpointCrossed(this, OtherActor);
+			if(bStart)
+			{
+				RaceManager->StartCrossed(OtherActor);
+			}
+			if(bFinish)
+			{
+				RaceManager->FinishCrossed(OtherActor);
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Checkpoint did not find RaceManager"));
+			UE_LOG(LogTemp, Warning, TEXT("StartFinish did not find RaceManager"));
 		}
 	}
 	
