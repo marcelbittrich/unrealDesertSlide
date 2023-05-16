@@ -21,6 +21,9 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
+	UFUNCTION(BlueprintCallable)
+	void InitializeRace();
+
 	void StartCrossed(AActor* TriggeringActor);
 	void FinishCrossed(AActor* TriggeringActor);
 	void CheckpointCrossed(AActor* Checkpoint, AActor* TriggeringActor);
@@ -53,7 +56,8 @@ private:
 	TArray<AActor*> AllCheckpoints;
 	UPROPERTY()
 	TArray<AActor*> CrossedCheckpoints;
-	
+
+	bool bRaceInitialized = false;
 	bool bStartCrossed = false;
 	bool bAllCheckpointsCrossed = false;
 	
@@ -67,6 +71,8 @@ private:
 	float LapStartTime = 0;
 	float LastLapTime = 0;
 	
+	UPROPERTY()
+	TSubclassOf<class ACheckpoint> CheckpointClass;
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> TimingsUIClass;
 	UPROPERTY()

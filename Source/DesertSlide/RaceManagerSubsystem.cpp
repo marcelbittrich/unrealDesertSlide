@@ -10,6 +10,8 @@
 
 URaceManagerSubsystem::URaceManagerSubsystem()
 {
+	ConstructorHelpers::FClassFinder<ACheckpoint> CheckpointBPClass(TEXT("/Game/DesertSlide/Core/Actors/BP_Checkpoint"));
+	CheckpointClass = CheckpointBPClass.Class;
 	ConstructorHelpers::FClassFinder<UUserWidget> TimingsUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_Timings"));
 	TimingsUIClass = TimingsUIWBPClass.Class;
 }
@@ -17,13 +19,7 @@ URaceManagerSubsystem::URaceManagerSubsystem()
 void URaceManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-
-	ClearData();
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager Initialized"));
-	
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACheckpoint::StaticClass(), AllCheckpoints);
-	
-	UE_LOG(LogTemp, Warning, TEXT("Found %i Checkpoints"), AllCheckpoints.Num());
 }
 
 void URaceManagerSubsystem::Deinitialize()
@@ -34,8 +30,22 @@ void URaceManagerSubsystem::Deinitialize()
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager Deinitialized"));
 }
 
+void URaceManagerSubsystem::InitializeRace()
+{
+	ClearData();
+	
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), CheckpointClass, AllCheckpoints);
+	UE_LOG(LogTemp, Warning, TEXT("Found %i Checkpoints"), AllCheckpoints.Num());
+
+	AddTimingsUI();
+	bRaceInitialized = true;
+	UE_LOG(LogTemp, Warning, TEXT("Race Manager RaceInitialized"));
+}
+
 void URaceManagerSubsystem::StartCrossed(AActor* TriggeringActor)
 {
+	if (!bRaceInitialized) return;
+	
 	if (bStartCrossed == false)
 	{
 		RaceStartTime = GetWorld()->GetTime().GetWorldTimeSeconds();
@@ -47,6 +57,8 @@ void URaceManagerSubsystem::StartCrossed(AActor* TriggeringActor)
 
 void URaceManagerSubsystem::FinishCrossed(AActor* TriggeringActor)
 {
+	if (!bRaceInitialized) return;
+	
 	if (bAllCheckpointsCrossed)
 	{
 		if (CurrentLap < Laps)
@@ -92,7 +104,7 @@ void URaceManagerSubsystem::HandleRaceEnd()
 
 void URaceManagerSubsystem::CheckpointCrossed(AActor* Checkpoint, AActor* TriggeringActor)
 {
-	if (!bStartCrossed) return;
+	if (!bRaceInitialized || !bStartCrossed) return;
 		
 	UE_LOG(LogTemp, Warning, TEXT("RaceManager: Checkpoint %s triggerd by: %s"), *Checkpoint->GetActorNameOrLabel(), *TriggeringActor->GetActorNameOrLabel());
 
