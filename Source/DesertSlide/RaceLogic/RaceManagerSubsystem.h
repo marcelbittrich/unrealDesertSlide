@@ -89,5 +89,9 @@ private:
 	TSubclassOf<class UUserWidget> FinishUIClass;
 	UPROPERTY()
 	class UFinishWidget* FinishUI;
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> StartUIClass;
+	UPROPERTY()
+	class UStartWidget* StartUI;
 };
 

@@ -6,6 +6,7 @@
 #include "Checkpoint.h"
 #include "DesertSlidePlayerController.h"
 #include "FinishWidget.h"
+#include "StartWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/CheckpointWidget.h"
@@ -21,6 +22,8 @@ URaceManagerSubsystem::URaceManagerSubsystem()
 	CheckpointUIClass = CheckpointUIWBPClass.Class;
 	ConstructorHelpers::FClassFinder<UUserWidget> FinishUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_FinishWidget"));
 	FinishUIClass = FinishUIWBPClass.Class;
+	ConstructorHelpers::FClassFinder<UUserWidget> StartUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_StartWidget"));
+	StartUIClass = StartUIWBPClass.Class;
 }
 
 void URaceManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -33,6 +36,8 @@ void URaceManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	CheckpointUI = CreateWidget<UCheckpointWidget>(this->GetGameInstance(), CheckpointUIClass);
 	if(!FinishUIClass) return;
 	FinishUI = CreateWidget<UFinishWidget>(this->GetGameInstance(), FinishUIClass);
+	if(!StartUIClass) return;
+	StartUI = CreateWidget<UStartWidget>(this->GetGameInstance(), StartUIClass);
 	
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager Initialized"));
 }
@@ -67,7 +72,7 @@ void URaceManagerSubsystem::HandleRaceStart()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("HandleRaceStart Disable Input"));
 		DesertSlidePlayerController->SetPlayerEnabledState(false);
-
+		StartUI->Display();
 		FTimerHandle PlayerEnableTimerHandle;
 		FTimerDelegate PlayerEnableTimerDelegate = FTimerDelegate::CreateUObject(
 			DesertSlidePlayerController,
