@@ -14,4 +14,6 @@ class DESERTSLIDE_API ADesertSlidePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+public:
+	void SetPlayerEnabledState(bool bPlayerEnabled);
 };

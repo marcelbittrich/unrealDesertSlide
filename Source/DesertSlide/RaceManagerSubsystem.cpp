@@ -4,8 +4,10 @@
 #include "RaceManagerSubsystem.h"
 
 #include "Checkpoint.h"
+#include "DesertSlidePlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/CheckpointWidget.h"
 #include "UI/Timings.h"
 
 URaceManagerSubsystem::URaceManagerSubsystem()
@@ -14,11 +16,19 @@ URaceManagerSubsystem::URaceManagerSubsystem()
 	CheckpointClass = CheckpointBPClass.Class;
 	ConstructorHelpers::FClassFinder<UUserWidget> TimingsUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_Timings"));
 	TimingsUIClass = TimingsUIWBPClass.Class;
+	ConstructorHelpers::FClassFinder<UUserWidget> CheckpointUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_CheckpointWidget"));
+	CheckpointUIClass = CheckpointUIWBPClass.Class;
 }
 
 void URaceManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+	if(!TimingsUIClass) return;
+	TimingsUI = CreateWidget<UTimings>(this->GetGameInstance(), TimingsUIClass);
+	if(!CheckpointUIClass) return;
+	CheckpointUI = CreateWidget<UCheckpointWidget>(this->GetGameInstance(), CheckpointUIClass);
+	
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager Initialized"));
 }
 
@@ -36,10 +46,36 @@ void URaceManagerSubsystem::InitializeRace()
 	
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), CheckpointClass, AllCheckpoints);
 	UE_LOG(LogTemp, Warning, TEXT("Found %i Checkpoints"), AllCheckpoints.Num());
-
+	
 	AddTimingsUI();
 	bRaceInitialized = true;
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager RaceInitialized"));
+	HandleRaceStart();
+}
+
+void URaceManagerSubsystem::HandleRaceStart()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HandleRaceStart"));
+	ADesertSlidePlayerController*  DesertSlidePlayerController = Cast<ADesertSlidePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	
+	if (DesertSlidePlayerController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleRaceStart Disable Input"));
+		DesertSlidePlayerController->SetPlayerEnabledState(false);
+
+		FTimerHandle PlayerEnableTimerHandle;
+		FTimerDelegate PlayerEnableTimerDelegate = FTimerDelegate::CreateUObject(
+			DesertSlidePlayerController,
+			&ADesertSlidePlayerController::SetPlayerEnabledState,
+			true
+		);
+		DesertSlidePlayerController->GetWorldTimerManager().SetTimer(
+			PlayerEnableTimerHandle,
+			PlayerEnableTimerDelegate,
+			StartCountdownTime,
+			false
+		);
+	}
 }
 
 void URaceManagerSubsystem::StartCrossed(AActor* TriggeringActor)
@@ -110,6 +146,11 @@ void URaceManagerSubsystem::CheckpointCrossed(AActor* Checkpoint, AActor* Trigge
 
 	if (IsNewCheckpoint(Checkpoint))
 	{
+		if (CheckpointUI)
+		{
+			CheckpointUI->Display(GetCurrentLapTime());
+		}
+		
 		CrossedCheckpoints.Add(Checkpoint);
 		if (CrossedCheckpoints.Num() == AllCheckpoints.Num())
 		{
@@ -142,6 +183,7 @@ void URaceManagerSubsystem::SetLaps(uint8 LapNumber)
 
 void URaceManagerSubsystem::ClearData()
 {
+	// TODO: Extend to achieve clean start after every initialize
 	CrossedCheckpoints.Empty();
 }
 
@@ -161,9 +203,6 @@ bool URaceManagerSubsystem::IsNewCheckpoint(const AActor* NewCheckpoint)
 
 void URaceManagerSubsystem::AddTimingsUI()
 {
-	if(!TimingsUIClass) return;
-	TimingsUI = CreateWidget<UTimings>(this->GetGameInstance(), TimingsUIClass);
-
 	if (TimingsUI)
 	{
 		TimingsUI->Setup();

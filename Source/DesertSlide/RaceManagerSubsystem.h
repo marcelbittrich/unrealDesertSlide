@@ -28,6 +28,7 @@ public:
 	void FinishCrossed(AActor* TriggeringActor);
 	void CheckpointCrossed(AActor* Checkpoint, AActor* TriggeringActor);
 
+	void HandleRaceStart();
 	void HandleNewLap();
 	void HandleRaceEnd();
 
@@ -57,6 +58,7 @@ private:
 	UPROPERTY()
 	TArray<AActor*> CrossedCheckpoints;
 
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bRaceInitialized = false;
 	bool bStartCrossed = false;
 	bool bAllCheckpointsCrossed = false;
@@ -64,6 +66,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bRaceEnded = false;
 
+	float StartCountdownTime = 3;
+	
 	uint8 Laps = 2;
 	uint8 CurrentLap = 1;
 	float RaceStartTime = 0;
@@ -77,5 +81,9 @@ private:
 	TSubclassOf<class UUserWidget> TimingsUIClass;
 	UPROPERTY()
 	class UTimings* TimingsUI;
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> CheckpointUIClass;
+	UPROPERTY()
+	class UCheckpointWidget* CheckpointUI;
 };
 

@@ -64,7 +64,6 @@ void ADesertSlideCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Player is ready"));
 }
 
 //////////////////////////////////////////////////////////////////////////
