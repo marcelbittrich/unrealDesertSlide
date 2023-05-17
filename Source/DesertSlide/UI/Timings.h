@@ -3,21 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "RaceWidget.h"
 #include "Timings.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DESERTSLIDE_API UTimings : public UUserWidget
+class DESERTSLIDE_API UTimings : public URaceWidget
 {
 	GENERATED_BODY()
 	
 public:
-	void Setup();
-	void Teardown();
-	
 	void SetLapTimeText(float Time);
 	void SetLastLapTimeText(float Time);
 	void SetCurrentLapText(int CurrentLap, int MaxLaps);

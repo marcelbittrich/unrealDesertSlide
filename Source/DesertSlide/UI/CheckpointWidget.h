@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "RaceWidget.h"
 #include "CheckpointWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DESERTSLIDE_API UCheckpointWidget : public UUserWidget
+class DESERTSLIDE_API UCheckpointWidget : public URaceWidget
 {
 	GENERATED_BODY()
 		
@@ -18,8 +18,10 @@ public:
 	void Display(float SectorTime, float DisplayTime = 1);
 
 private:
-	void Setup();
-	void Teardown();
+	// Setup and Teardown should be private on this widget.
+	// Display() is only necessary.
+	virtual void Setup() override;
+	virtual void Teardown() override;
 	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* SectorTimeText;

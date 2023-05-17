@@ -13,7 +13,9 @@ public class DesertSlide : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[]
 			{
-				"DesertSlide"
+				"DesertSlide",
+				"DesertSlide/UI",
+				"DesertSlide/RaceLogic"
 			}
 		);
 

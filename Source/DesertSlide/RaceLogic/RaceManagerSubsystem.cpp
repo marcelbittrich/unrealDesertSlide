@@ -5,6 +5,7 @@
 
 #include "Checkpoint.h"
 #include "DesertSlidePlayerController.h"
+#include "FinishWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/CheckpointWidget.h"
@@ -18,6 +19,8 @@ URaceManagerSubsystem::URaceManagerSubsystem()
 	TimingsUIClass = TimingsUIWBPClass.Class;
 	ConstructorHelpers::FClassFinder<UUserWidget> CheckpointUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_CheckpointWidget"));
 	CheckpointUIClass = CheckpointUIWBPClass.Class;
+	ConstructorHelpers::FClassFinder<UUserWidget> FinishUIWBPClass(TEXT("/Game/DesertSlide/UI/WBP_FinishWidget"));
+	FinishUIClass = FinishUIWBPClass.Class;
 }
 
 void URaceManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -28,6 +31,8 @@ void URaceManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	TimingsUI = CreateWidget<UTimings>(this->GetGameInstance(), TimingsUIClass);
 	if(!CheckpointUIClass) return;
 	CheckpointUI = CreateWidget<UCheckpointWidget>(this->GetGameInstance(), CheckpointUIClass);
+	if(!FinishUIClass) return;
+	FinishUI = CreateWidget<UFinishWidget>(this->GetGameInstance(), FinishUIClass);
 	
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager Initialized"));
 }
@@ -80,7 +85,7 @@ void URaceManagerSubsystem::HandleRaceStart()
 
 void URaceManagerSubsystem::StartCrossed(AActor* TriggeringActor)
 {
-	if (!bRaceInitialized) return;
+	if (!bRaceInitialized || bRaceEnded) return;
 	
 	if (bStartCrossed == false)
 	{
@@ -93,10 +98,12 @@ void URaceManagerSubsystem::StartCrossed(AActor* TriggeringActor)
 
 void URaceManagerSubsystem::FinishCrossed(AActor* TriggeringActor)
 {
-	if (!bRaceInitialized) return;
+	if (!bRaceInitialized || bRaceEnded) return;
 	
 	if (bAllCheckpointsCrossed)
 	{
+		bool bDisplayFinished = ( CurrentLap == Laps );
+		FinishUI->Display(GetCurrentLapTime(), CurrentLap, bDisplayFinished);
 		if (CurrentLap < Laps)
 		{
 			HandleNewLap();
@@ -140,7 +147,7 @@ void URaceManagerSubsystem::HandleRaceEnd()
 
 void URaceManagerSubsystem::CheckpointCrossed(AActor* Checkpoint, AActor* TriggeringActor)
 {
-	if (!bRaceInitialized || !bStartCrossed) return;
+	if (!bRaceInitialized || !bStartCrossed || bRaceEnded) return;
 		
 	UE_LOG(LogTemp, Warning, TEXT("RaceManager: Checkpoint %s triggerd by: %s"), *Checkpoint->GetActorNameOrLabel(), *TriggeringActor->GetActorNameOrLabel());
 

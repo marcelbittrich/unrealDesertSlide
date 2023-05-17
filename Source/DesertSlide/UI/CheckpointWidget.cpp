@@ -7,12 +7,12 @@
 
 void UCheckpointWidget::Setup()
 {
-	this->AddToViewport();
+	Super::Setup();
 }
 
 void UCheckpointWidget::Teardown()
 {
-	this->RemoveFromParent();
+	Super::Teardown();
 }
 
 void UCheckpointWidget::Display(float SectorTime, float DisplayTime)

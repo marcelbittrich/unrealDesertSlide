@@ -85,5 +85,9 @@ private:
 	TSubclassOf<class UUserWidget> CheckpointUIClass;
 	UPROPERTY()
 	class UCheckpointWidget* CheckpointUI;
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> FinishUIClass;
+	UPROPERTY()
+	class UFinishWidget* FinishUI;
 };
 

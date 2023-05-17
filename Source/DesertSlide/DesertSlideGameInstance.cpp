@@ -3,6 +3,8 @@
 
 #include "DesertSlideGameInstance.h"
 
+#include "CheckpointWidget.h"
+
 UDesertSlideGameInstance::UDesertSlideGameInstance(const FObjectInitializer & ObjectInitializer)
 {
 	
@@ -13,4 +15,5 @@ void UDesertSlideGameInstance::Init()
 	Super::Init();
 
 	UE_LOG(LogTemp, Warning, TEXT("GameInstace Initialized"));
+	
 }

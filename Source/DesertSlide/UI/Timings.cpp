@@ -5,16 +5,6 @@
 
 #include "Components/TextBlock.h"
 
-void UTimings::Setup()
-{
-	this->AddToViewport();
-}
-
-void UTimings::Teardown()
-{
-	this->RemoveFromParent();
-}
-
 void UTimings::SetLapTimeText(float Time)
 {
 	FString LapTimeString = "Lap Time:  " + FString::SanitizeFloat(Time);
