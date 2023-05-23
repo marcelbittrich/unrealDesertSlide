@@ -38,8 +38,8 @@ class ADesertSlideCharacter : public ACharacter
 	class UInputAction* LookAction;
 
 public:
-	ADesertSlideCharacter();
-	
+	ADesertSlideCharacter(const FObjectInitializer& ObjectInitializer);
+
 
 protected:
 
@@ -48,7 +48,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
+	class UDesertCharacterMovementComponent* DesertCharacterMovementComponent;
 
 protected:
 	// APawn interface

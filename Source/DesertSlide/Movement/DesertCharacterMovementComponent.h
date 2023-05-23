@@ -37,6 +37,11 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 		virtual FSavedMovePtr AllocateNewMove() override;
 	};
 
+	UPROPERTY(EditDefaultsOnly)
+	float Sprint_MaxWalkSpeed;
+	UPROPERTY(EditDefaultsOnly)
+	float Walk_MaxWalkSpeed;
+	
 	bool Safe_bWantsToSprint;
 	
 public:
@@ -45,6 +50,13 @@ public:
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 
+	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
+
 public:
 	UDesertCharacterMovementComponent();
+
+	UFUNCTION(BlueprintCallable)
+	void SprintPressed();
+	UFUNCTION(BlueprintCallable)
+	void SprintReleased();
 };

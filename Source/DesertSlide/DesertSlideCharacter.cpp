@@ -9,13 +9,17 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Movement/DesertCharacterMovementComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 // ADesertSlideCharacter
 
-ADesertSlideCharacter::ADesertSlideCharacter()
+ADesertSlideCharacter::ADesertSlideCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UDesertCharacterMovementComponent>(CharacterMovementComponentName))
 {
+	DesertCharacterMovementComponent = Cast<UDesertCharacterMovementComponent>(GetCharacterMovement());
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
