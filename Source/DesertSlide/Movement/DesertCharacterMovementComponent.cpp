@@ -3,7 +3,10 @@
 
 #include "DesertCharacterMovementComponent.h"
 
+#include "DesertSlideCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "Math/UnrealMathUtility.h"
 
 #pragma region Saved Move
 
@@ -49,6 +52,7 @@ void UDesertCharacterMovementComponent::FSavedMove_Desert::SetMoveFor(ACharacter
 	UDesertCharacterMovementComponent* CharacterMovement = Cast<UDesertCharacterMovementComponent>(C->GetCharacterMovement());
 
 	Saved_bWantsToSprint = CharacterMovement->Safe_bWantsToSprint;
+	Saved_bPrevWantsToCrouch = CharacterMovement->Safe_bPrevWantsToCrouch;
 }
 
 void UDesertCharacterMovementComponent::FSavedMove_Desert::PrepMoveFor(ACharacter* C)
@@ -58,6 +62,7 @@ void UDesertCharacterMovementComponent::FSavedMove_Desert::PrepMoveFor(ACharacte
 	UDesertCharacterMovementComponent* CharacterMovement = Cast<UDesertCharacterMovementComponent>(C->GetCharacterMovement());
 
 	CharacterMovement->Safe_bWantsToSprint = Saved_bWantsToSprint;
+	CharacterMovement->Safe_bPrevWantsToCrouch = Saved_bPrevWantsToCrouch;
 }
 
 #pragma endregion
@@ -102,6 +107,13 @@ UDesertCharacterMovementComponent::UDesertCharacterMovementComponent()
 	NavAgentProps.bCanCrouch = true;
 }
 
+void UDesertCharacterMovementComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	DesertSlideCharacterOwner = Cast<ADesertSlideCharacter>(GetOwner());
+}
+
 void UDesertCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 {
 	Super::UpdateFromCompressedFlags(Flags);
@@ -125,7 +137,129 @@ void UDesertCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, co
 			MaxWalkSpeed = Walk_MaxWalkSpeed;
 		}
 	}
+
+	Safe_bPrevWantsToCrouch = bWantsToCrouch;
+}
+
+void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
+{
+	if (MovementMode == MOVE_Walking && !bWantsToCrouch && Safe_bPrevWantsToCrouch)
+	{
+		FHitResult PotentialSlideSurface;
+		if (Velocity. SizeSquared() > FMath::Square(Slide_MinSpeed) && GetSlideSurface(PotentialSlideSurface))
+		{
+			EnterSlide();
+		}
+
+		if (IsCustomMovementMode(CMOVE_Slide) && !bWantsToCrouch)
+		{
+			ExitSlide();
+		}
+	}
+	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+}
+
+#pragma endregion 
+
+#pragma region Slide
+
+void UDesertCharacterMovementComponent::EnterSlide()
+{
+	bWantsToCrouch = true;
+	Velocity += Velocity.GetSafeNormal2D() * Slide_EnterImpulse;
+	SetMovementMode(MOVE_Custom, CMOVE_Slide);
+}
+
+void UDesertCharacterMovementComponent::ExitSlide()
+{
+	bWantsToCrouch = false;
+
+	FQuat NewRotation = FRotationMatrix::MakeFromXZ(UpdatedComponent->GetForwardVector().GetSafeNormal2D(), FVector::UpVector).ToQuat();
+	FHitResult Hit;
+	SafeMoveUpdatedComponent(FVector::ZeroVector, NewRotation, true, Hit);
+	SetMovementMode(MOVE_Walking);
+}
+
+void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
+{
+	if (deltaTime < MIN_TICK_TIME)
+	{
+		return;
+	}
+
+	RestorePreAdditiveRootMotionVelocity();
+
+	FHitResult SurfaceHit;
 	
+	if(!GetSlideSurface(SurfaceHit) || Velocity.SizeSquared() < FMath::Square(Slide_MinSpeed))
+	{
+		ExitSlide();
+		StartNewPhysics(deltaTime, Iterations);
+		return;
+	}
+
+	// Surface Gravity
+	Velocity *= Slide_GravityForce * FVector::DownVector * deltaTime;
+
+	// Strafe
+	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .5)
+	{
+		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
+	}
+	else
+	{
+		Acceleration = FVector::ZeroVector;
+	}
+
+	// Calc Velocity
+	if (!HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
+	{
+		// Friction only functions in fluids, TODO: check function
+		CalcVelocity(deltaTime, Slide_Friction, true, GetMaxBrakingDeceleration());
+	}
+	ApplyRootMotionToVelocity(deltaTime);
+
+	// Perform Move
+	Iterations++;
+	bJustTeleported = false;
+
+	FVector OldLocation = UpdatedComponent->GetComponentLocation();
+	FQuat OldRoation = UpdatedComponent->GetComponentRotation().Quaternion();
+	FHitResult Hit(1.f);
+	FVector Adjusted = Velocity * deltaTime;
+	FVector VelPlaneDir = FVector::VectorPlaneProject(Velocity, SurfaceHit.Normal).GetSafeNormal();
+	FQuat NewRotation = FRotationMatrix::MakeFromXZ(VelPlaneDir, SurfaceHit.Normal).ToQuat();
+	
+	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);
+
+	if (Hit.Time < 1.f)
+	{
+		HandleImpact(Hit, deltaTime, Adjusted);
+		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
+	}
+
+	FHitResult NewSurfaceHit;
+	if (!GetSlideSurface(NewSurfaceHit) || Velocity.SizeSquared() < FMath::Square(Slide_MinSpeed))
+	{
+		ExitSlide();
+	}
+
+	// Update Outgoing Velocity & Acceleration
+	if (!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
+	{
+		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / deltaTime;
+	}
+}
+
+bool UDesertCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const
+{
+	FVector Start = UpdatedComponent->GetComponentLocation();
+	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f * FVector::DownVector;
+	FName ProfileName = TEXT("BlockAll");
+	
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	
+	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, DesertSlideCharacterOwner->GetIgnoreCharacterParams());
 }
 
 #pragma endregion 
@@ -150,6 +284,11 @@ void UDesertCharacterMovementComponent::CrouchPressed()
 void UDesertCharacterMovementComponent::CrouchReleased()
 {
 	bWantsToCrouch = false;
+}
+
+bool UDesertCharacterMovementComponent::IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const
+{
+	return MovementMode == MOVE_Custom && CustomMovementMode == InCustomMovementMode;
 }
 
 #pragma endregion 

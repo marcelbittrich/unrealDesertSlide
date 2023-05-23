@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "CollisionQueryParams.h"
+
 #include "DesertSlideCharacter.generated.h"
 
 
@@ -66,5 +68,8 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	/** Returns Movement subobject **/
 	FORCEINLINE class UDesertCharacterMovementComponent* GetDesertCharacterMovement() const { return DesertCharacterMovementComponent; }
+
+	// Returns character and all its children for collision exclusion
+	FCollisionQueryParams GetIgnoreCharacterParams() const;
 };
 

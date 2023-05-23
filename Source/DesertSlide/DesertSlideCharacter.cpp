@@ -128,6 +128,19 @@ void ADesertSlideCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+FCollisionQueryParams ADesertSlideCharacter::GetIgnoreCharacterParams() const
+{
+	FCollisionQueryParams Params;
+	
+	TArray<AActor*> CharacterChildren;
+	GetAllChildActors(CharacterChildren);
+	Params.AddIgnoredActors(CharacterChildren);
+	Params.AddIgnoredActor(this);
+
+	return Params;
+}
+
+
 
 
 
