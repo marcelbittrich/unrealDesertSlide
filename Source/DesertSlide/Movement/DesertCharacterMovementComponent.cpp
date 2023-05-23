@@ -5,6 +5,8 @@
 
 #include "GameFramework/Character.h"
 
+#pragma region Saved Move
+
 bool UDesertCharacterMovementComponent::FSavedMove_Desert::CanCombineWith(const FSavedMovePtr& NewMove,
                                                                           ACharacter* InCharacter, float MaxDelta) const
 {
@@ -58,6 +60,10 @@ void UDesertCharacterMovementComponent::FSavedMove_Desert::PrepMoveFor(ACharacte
 	CharacterMovement->Safe_bWantsToSprint = Saved_bWantsToSprint;
 }
 
+#pragma endregion
+
+#pragma region Client Network Prediction Data
+
 UDesertCharacterMovementComponent::FNetworkPredictionData_Client_Desert::FNetworkPredictionData_Client_Desert(
 	const UCharacterMovementComponent& ClientMovement) : Super(ClientMovement)
 {
@@ -87,6 +93,15 @@ FNetworkPredictionData_Client* UDesertCharacterMovementComponent::GetPredictionD
 	return ClientPredictionData;
 }
 
+#pragma endregion
+
+#pragma region CMC
+
+UDesertCharacterMovementComponent::UDesertCharacterMovementComponent()
+{
+	NavAgentProps.bCanCrouch = true;
+}
+
 void UDesertCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 {
 	Super::UpdateFromCompressedFlags(Flags);
@@ -113,10 +128,9 @@ void UDesertCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, co
 	
 }
 
-UDesertCharacterMovementComponent::UDesertCharacterMovementComponent()
-{
-	
-}
+#pragma endregion 
+
+#pragma region Input
 
 void UDesertCharacterMovementComponent::SprintPressed()
 {
@@ -128,3 +142,14 @@ void UDesertCharacterMovementComponent::SprintReleased()
 	Safe_bWantsToSprint = false;
 }
 
+void UDesertCharacterMovementComponent::CrouchPressed()
+{
+	bWantsToCrouch = true;
+}
+
+void UDesertCharacterMovementComponent::CrouchReleased()
+{
+	bWantsToCrouch = false;
+}
+
+#pragma endregion 
