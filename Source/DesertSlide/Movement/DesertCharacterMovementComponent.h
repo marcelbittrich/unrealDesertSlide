@@ -78,11 +78,15 @@ public:
 	
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
 
+	virtual bool IsMovingOnGround() const override;
+	virtual bool CanCrouchInCurrentState() const override;
+
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
-
-	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
+	
+	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override; // Checks of we enter slide
+	virtual void PhysCustom(float deltaTime, int32 Iterations) override; // Links to custom PhysSlide function
 
 private:
 	void EnterSlide();

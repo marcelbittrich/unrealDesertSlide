@@ -141,6 +141,18 @@ void UDesertCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, co
 	Safe_bPrevWantsToCrouch = bWantsToCrouch;
 }
 
+bool UDesertCharacterMovementComponent::IsMovingOnGround() const
+{
+	// Adds Slide as a on ground movement.
+	return Super::IsMovingOnGround() || IsCustomMovementMode(CMOVE_Slide);
+}
+
+bool UDesertCharacterMovementComponent::CanCrouchInCurrentState() const
+{
+	// Prevents crouching in air.
+	return Super::CanCrouchInCurrentState() && IsMovingOnGround();
+}
+
 void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
 	if (MovementMode == MOVE_Walking && !bWantsToCrouch && Safe_bPrevWantsToCrouch)
@@ -148,6 +160,7 @@ void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float
 		FHitResult PotentialSlideSurface;
 		if (Velocity. SizeSquared() > FMath::Square(Slide_MinSpeed) && GetSlideSurface(PotentialSlideSurface))
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Enter Slide"));
 			EnterSlide();
 		}
 
@@ -157,6 +170,21 @@ void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float
 		}
 	}
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+}
+
+void UDesertCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
+{
+	Super::PhysCustom(deltaTime, Iterations);
+
+	switch (CustomMovementMode)
+	{
+	case CMOVE_Slide:
+		PhysSlide(deltaTime, Iterations);
+		break;
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Invalid Movement Mode"));
+		break;
+	}
 }
 
 #pragma endregion 
@@ -172,6 +200,7 @@ void UDesertCharacterMovementComponent::EnterSlide()
 
 void UDesertCharacterMovementComponent::ExitSlide()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Exit Slide"));
 	bWantsToCrouch = false;
 
 	FQuat NewRotation = FRotationMatrix::MakeFromXZ(UpdatedComponent->GetForwardVector().GetSafeNormal2D(), FVector::UpVector).ToQuat();
@@ -184,6 +213,7 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 {
 	if (deltaTime < MIN_TICK_TIME)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MIN_TICK exit"));
 		return;
 	}
 
@@ -193,13 +223,14 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 	
 	if(!GetSlideSurface(SurfaceHit) || Velocity.SizeSquared() < FMath::Square(Slide_MinSpeed))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MinSpeed not reached or no Surface hit"));
 		ExitSlide();
 		StartNewPhysics(deltaTime, Iterations);
 		return;
 	}
 
 	// Surface Gravity
-	Velocity *= Slide_GravityForce * FVector::DownVector * deltaTime;
+	Velocity += Slide_GravityForce * FVector::DownVector * deltaTime;
 
 	// Strafe
 	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .5)
@@ -238,9 +269,12 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("PhysSlide: Velocity after calc: %f"), Velocity.Size());
+	
 	FHitResult NewSurfaceHit;
 	if (!GetSlideSurface(NewSurfaceHit) || Velocity.SizeSquared() < FMath::Square(Slide_MinSpeed))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MinSpeed not reached or no Surface hit after calculations"));
 		ExitSlide();
 	}
 
@@ -278,7 +312,7 @@ void UDesertCharacterMovementComponent::SprintReleased()
 
 void UDesertCharacterMovementComponent::CrouchPressed()
 {
-	bWantsToCrouch = true;
+	bWantsToCrouch = !bWantsToCrouch;
 }
 
 void UDesertCharacterMovementComponent::CrouchReleased()
