@@ -105,6 +105,7 @@ FNetworkPredictionData_Client* UDesertCharacterMovementComponent::GetPredictionD
 UDesertCharacterMovementComponent::UDesertCharacterMovementComponent()
 {
 	NavAgentProps.bCanCrouch = true;
+	NavAgentProps.bCanJump = true;
 }
 
 void UDesertCharacterMovementComponent::InitializeComponent()
@@ -125,17 +126,14 @@ void UDesertCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, co
 	const FVector& OldVelocity)
 {
 	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
-
+	
+	float SlopeFactor = GetGroundSlopeFactor();
+	// MaxWalkSpeed is used in CMOVE_Slide as exit value.
+	MaxWalkSpeed = Move_BaseMaxWalkSpeed + SlopeFactor * Move_SlopeWalkSpeedOffset;
+	
 	if (MovementMode == MOVE_Walking)
 	{
-		if (Safe_bWantsToSprint)
-		{
-			MaxWalkSpeed = Sprint_MaxWalkSpeed;
-		}
-		else
-		{
-			MaxWalkSpeed = Walk_MaxWalkSpeed;
-		}
+		MaxAcceleration = Move_BaseAcceleration + SlopeFactor * Move_SlopeAcceleration;
 	}
 
 	Safe_bPrevWantsToCrouch = bWantsToCrouch;
@@ -153,9 +151,25 @@ bool UDesertCharacterMovementComponent::CanCrouchInCurrentState() const
 	return Super::CanCrouchInCurrentState() && IsMovingOnGround();
 }
 
+void UDesertCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
+	FString VelocityString = FString::SanitizeFloat(Velocity.Size());
+	GEngine->AddOnScreenDebugMessage(1,1,FColor::Green, VelocityString);
+
+	FString MovementModeString = GetMovementName();
+	GEngine->AddOnScreenDebugMessage(2,1,FColor::Green, MovementModeString);
+
+	GEngine->AddOnScreenDebugMessage(3,1,FColor::Green, FString::SanitizeFloat(GetGroundSlopeFactor()));
+
+	GEngine->AddOnScreenDebugMessage(4,1,FColor::Green, FString::SanitizeFloat(Acceleration.Size()));
+}
+
 void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
-	if (MovementMode == MOVE_Walking && !bWantsToCrouch && Safe_bPrevWantsToCrouch)
+	if ((MovementMode == MOVE_Walking) && Velocity.SizeSquared() > FMath::Square(Slide_EnterSpeed))
 	{
 		FHitResult PotentialSlideSurface;
 		if (Velocity. SizeSquared() > FMath::Square(Slide_MinSpeed) && GetSlideSurface(PotentialSlideSurface))
@@ -163,12 +177,8 @@ void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float
 			UE_LOG(LogTemp, Warning, TEXT("Enter Slide"));
 			EnterSlide();
 		}
-
-		if (IsCustomMovementMode(CMOVE_Slide) && !bWantsToCrouch)
-		{
-			ExitSlide();
-		}
 	}
+	
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 }
 
@@ -184,6 +194,26 @@ void UDesertCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterat
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Invalid Movement Mode"));
 		break;
+	}
+}
+
+float UDesertCharacterMovementComponent::GetGroundSlopeFactor()
+{
+	FHitResult Ground;
+	if (GetSlideSurface(Ground))
+	{
+		FVector HorizontalVelocity = Velocity;
+		HorizontalVelocity.Z = 0;
+		
+		DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + Ground.ImpactNormal * 100, FColor::Green, false, -1, 0, 5);
+		DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + HorizontalVelocity.GetSafeNormal() * 100, FColor::Blue, false, -1, 0, 5);
+
+		return FVector::DotProduct(Ground.ImpactNormal, HorizontalVelocity.GetSafeNormal());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GetGroundSlopeFactor in DesertMovement failed."));
+		return 0.f;
 	}
 }
 
@@ -221,9 +251,9 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 
 	FHitResult SurfaceHit;
 	
-	if(!GetSlideSurface(SurfaceHit) || Velocity.SizeSquared() < FMath::Square(Slide_MinSpeed))
+	if(!GetSlideSurface(SurfaceHit) || Velocity.SizeSquared() < (FMath::Square(MaxWalkSpeed) - 50))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MinSpeed not reached or no Surface hit"));
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MaxWalkSpeed is higher or no Surface hit"));
 		ExitSlide();
 		StartNewPhysics(deltaTime, Iterations);
 		return;
@@ -233,21 +263,23 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 	Velocity += Slide_GravityForce * FVector::DownVector * deltaTime;
 
 	// Strafe
+
 	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .5)
 	{
-		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
+		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector()) * 10.f;
 	}
 	else
 	{
 		Acceleration = FVector::ZeroVector;
 	}
-
+	
 	// Calc Velocity
 	if (!HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
 	{
 		// Friction only functions in fluids, TODO: check function
 		CalcVelocity(deltaTime, Slide_Friction, true, GetMaxBrakingDeceleration());
 	}
+	
 	ApplyRootMotionToVelocity(deltaTime);
 
 	// Perform Move
@@ -263,6 +295,10 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 	
 	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);
 
+	FVector NewLocation = UpdatedComponent->GetComponentLocation();
+	FVector End = NewLocation + Velocity;
+	DrawDebugLine(GetWorld(), NewLocation, End, FColor::Red, false, -1, 0, 10);
+
 	if (Hit.Time < 1.f)
 	{
 		HandleImpact(Hit, deltaTime, Adjusted);
@@ -272,9 +308,9 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 	UE_LOG(LogTemp, Warning, TEXT("PhysSlide: Velocity after calc: %f"), Velocity.Size());
 	
 	FHitResult NewSurfaceHit;
-	if (!GetSlideSurface(NewSurfaceHit) || Velocity.SizeSquared() < FMath::Square(Slide_MinSpeed))
+	if (!GetSlideSurface(NewSurfaceHit) || Velocity.SizeSquared() < (FMath::Square(MaxWalkSpeed) - 50))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MinSpeed not reached or no Surface hit after calculations"));
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide: MaxWalkSpeed is higher or no Surface hit after calculations"));
 		ExitSlide();
 	}
 
@@ -288,10 +324,8 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 bool UDesertCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const
 {
 	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f * FVector::DownVector;
+	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.5f * FVector::DownVector;
 	FName ProfileName = TEXT("BlockAll");
-	
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 	
 	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, DesertSlideCharacterOwner->GetIgnoreCharacterParams());
 }

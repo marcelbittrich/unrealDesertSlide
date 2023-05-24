@@ -50,12 +50,19 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 
 	// Parameters
 	UPROPERTY(EditDefaultsOnly)
-	float Sprint_MaxWalkSpeed;
+	float Move_BaseMaxWalkSpeed = 1000;
 	UPROPERTY(EditDefaultsOnly)
-	float Walk_MaxWalkSpeed;
-
+	float Move_SlopeWalkSpeedOffset = 1000;
+	
 	UPROPERTY(EditDefaultsOnly)
-	float Slide_MinSpeed = 350;
+	float Move_BaseAcceleration = 500;
+	UPROPERTY(EditDefaultsOnly)
+	float Move_SlopeAcceleration = 500;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float Slide_EnterSpeed = 1200;
+	UPROPERTY(EditDefaultsOnly)
+	float Slide_MinSpeed = 700;
 	UPROPERTY(EditDefaultsOnly)
 	float Slide_EnterImpulse = 500; //TODO: evaluate relevance
 	UPROPERTY(EditDefaultsOnly)
@@ -81,6 +88,8 @@ public:
 	virtual bool IsMovingOnGround() const override;
 	virtual bool CanCrouchInCurrentState() const override;
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
@@ -93,7 +102,7 @@ private:
 	void ExitSlide();
 	void PhysSlide (float deltaTime, int32 Iterations);
 	bool GetSlideSurface(FHitResult& Hit) const;
-
+	float GetGroundSlopeFactor();
 public:
 
 	UFUNCTION(BlueprintCallable)
