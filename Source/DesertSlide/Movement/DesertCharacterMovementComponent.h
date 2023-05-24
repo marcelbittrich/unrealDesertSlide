@@ -87,7 +87,7 @@ public:
 
 	virtual bool IsMovingOnGround() const override;
 	virtual bool CanCrouchInCurrentState() const override;
-
+	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
@@ -103,6 +103,8 @@ private:
 	void PhysSlide (float deltaTime, int32 Iterations);
 	bool GetSlideSurface(FHitResult& Hit) const;
 	float GetGroundSlopeFactor();
+
+	void DisplayDebugMessages();
 public:
 
 	UFUNCTION(BlueprintCallable)

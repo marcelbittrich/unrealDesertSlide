@@ -104,8 +104,7 @@ FNetworkPredictionData_Client* UDesertCharacterMovementComponent::GetPredictionD
 
 UDesertCharacterMovementComponent::UDesertCharacterMovementComponent()
 {
-	NavAgentProps.bCanCrouch = true;
-	NavAgentProps.bCanJump = true;
+
 }
 
 void UDesertCharacterMovementComponent::InitializeComponent()
@@ -155,16 +154,21 @@ void UDesertCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTic
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+
+	DisplayDebugMessages();
+}
+
+void UDesertCharacterMovementComponent::DisplayDebugMessages()
+{
 	FString VelocityString = FString::SanitizeFloat(Velocity.Size());
-	GEngine->AddOnScreenDebugMessage(1,1,FColor::Green, VelocityString);
+	GEngine->AddOnScreenDebugMessage(1,1,FColor::Green, "Speed: " + VelocityString);
 
 	FString MovementModeString = GetMovementName();
-	GEngine->AddOnScreenDebugMessage(2,1,FColor::Green, MovementModeString);
-
-	GEngine->AddOnScreenDebugMessage(3,1,FColor::Green, FString::SanitizeFloat(GetGroundSlopeFactor()));
-
-	GEngine->AddOnScreenDebugMessage(4,1,FColor::Green, FString::SanitizeFloat(Acceleration.Size()));
+	GEngine->AddOnScreenDebugMessage(2,1,FColor::Green, "Mode: " + MovementModeString);
+	GEngine->AddOnScreenDebugMessage(3,1,FColor::Green, "Slope: " + FString::SanitizeFloat(GetGroundSlopeFactor()));
+	GEngine->AddOnScreenDebugMessage(4,1,FColor::Green, "Acc: " + FString::SanitizeFloat(Acceleration.Size()));
+	uint8 CanCrouch = NavAgentProps.bCanCrouch;
+	GEngine->AddOnScreenDebugMessage(5,1,FColor::Green, "CanCrouch: " + FString::FromInt(CanCrouch));
 }
 
 void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
@@ -172,7 +176,7 @@ void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float
 	if ((MovementMode == MOVE_Walking) && Velocity.SizeSquared() > FMath::Square(Slide_EnterSpeed))
 	{
 		FHitResult PotentialSlideSurface;
-		if (Velocity. SizeSquared() > FMath::Square(Slide_MinSpeed) && GetSlideSurface(PotentialSlideSurface))
+		if (GetSlideSurface(PotentialSlideSurface))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Enter Slide"));
 			EnterSlide();
@@ -212,7 +216,6 @@ float UDesertCharacterMovementComponent::GetGroundSlopeFactor()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("GetGroundSlopeFactor in DesertMovement failed."));
 		return 0.f;
 	}
 }
@@ -223,7 +226,8 @@ float UDesertCharacterMovementComponent::GetGroundSlopeFactor()
 
 void UDesertCharacterMovementComponent::EnterSlide()
 {
-	bWantsToCrouch = true;
+	NavAgentProps.bCanCrouch = true;
+	NavAgentProps.bCanJump = true;
 	Velocity += Velocity.GetSafeNormal2D() * Slide_EnterImpulse;
 	SetMovementMode(MOVE_Custom, CMOVE_Slide);
 }
@@ -231,7 +235,7 @@ void UDesertCharacterMovementComponent::EnterSlide()
 void UDesertCharacterMovementComponent::ExitSlide()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Exit Slide"));
-	bWantsToCrouch = false;
+	NavAgentProps.bCanCrouch = false;
 
 	FQuat NewRotation = FRotationMatrix::MakeFromXZ(UpdatedComponent->GetForwardVector().GetSafeNormal2D(), FVector::UpVector).ToQuat();
 	FHitResult Hit;
@@ -291,7 +295,11 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
 	FVector VelPlaneDir = FVector::VectorPlaneProject(Velocity, SurfaceHit.Normal).GetSafeNormal();
+
+	// Either Sloped Character Position
 	FQuat NewRotation = FRotationMatrix::MakeFromXZ(VelPlaneDir, SurfaceHit.Normal).ToQuat();
+	// ... or Flat Character Position
+	//FQuat NewRotation = FRotationMatrix::MakeFromXZ(Velocity.GetSafeNormal2D(), FVector::UpVector).ToQuat();
 	
 	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);
 
@@ -346,7 +354,7 @@ void UDesertCharacterMovementComponent::SprintReleased()
 
 void UDesertCharacterMovementComponent::CrouchPressed()
 {
-	bWantsToCrouch = !bWantsToCrouch;
+	bWantsToCrouch = true;
 }
 
 void UDesertCharacterMovementComponent::CrouchReleased()
