@@ -57,14 +57,22 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 	UPROPERTY(EditDefaultsOnly)
 	float Move_BaseAcceleration = 500;
 	UPROPERTY(EditDefaultsOnly)
+
 	float Move_SlopeAcceleration = 500;
-	
+
+
+	UPROPERTY(EditDefaultsOnly)
+	float Slide_Controllability = 5;
+	UPROPERTY(EditDefaultsOnly)
+	float Slide_GroundFriction = 5;
 	UPROPERTY(EditDefaultsOnly)
 	float Slide_EnterSpeed = 1200;
 	UPROPERTY(EditDefaultsOnly)
 	float Slide_MinSpeed = 700;
 	UPROPERTY(EditDefaultsOnly)
 	float Slide_EnterImpulse = 500; //TODO: evaluate relevance
+	UPROPERTY(EditDefaultsOnly)
+	float Slide_SlopeAcceleration = 1000;
 	UPROPERTY(EditDefaultsOnly)
 	float Slide_GravityForce = 5000;
 	UPROPERTY(EditDefaultsOnly)
@@ -105,6 +113,9 @@ private:
 	float GetGroundSlopeFactor();
 
 	void DisplayDebugMessages();
+
+	float EntryGroundFriction;
+	
 public:
 
 	UFUNCTION(BlueprintCallable)
