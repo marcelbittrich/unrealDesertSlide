@@ -49,34 +49,38 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 	};
 
 	// Parameters
-	UPROPERTY(EditDefaultsOnly)
-	float Move_BaseMaxWalkSpeed = 1000;
-	UPROPERTY(EditDefaultsOnly)
-	float Move_SlopeWalkSpeedOffset = 1000;
-	
-	UPROPERTY(EditDefaultsOnly)
-	float Move_BaseAcceleration = 500;
-	UPROPERTY(EditDefaultsOnly)
 
-	float Move_SlopeAcceleration = 500;
+		// Walk
+		UPROPERTY(EditDefaultsOnly)
+		float WalkBaseMaxSpeed = 1000;
+		UPROPERTY(EditDefaultsOnly)
+		float WalkSlopeSpeedOffset = 1000;
+		UPROPERTY(EditDefaultsOnly)
+		float WalkBaseAcceleration = 500;
+		UPROPERTY(EditDefaultsOnly)
+		float WalkSlopeAcceleration = 500;
 
-
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_Controllability = 5;
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_GroundFriction = 5;
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_EnterSpeed = 1200;
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_MinSpeed = 700;
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_EnterImpulse = 500; //TODO: evaluate relevance
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_SlopeAcceleration = 1000;
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_GravityForce = 5000;
-	UPROPERTY(EditDefaultsOnly)
-	float Slide_Friction = 1.3;
+		// Slide
+		UPROPERTY(EditDefaultsOnly)
+		float SlideControllability = 5;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideGroundFriction = 5;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideEnterSpeed = 1200;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideMinSpeed = 700;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideMaxSpeed = 700;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideEnterImpulse = 500; //TODO: evaluate relevance
+		UPROPERTY(EditDefaultsOnly)
+		float SlideGravityForce = 5000;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideCrouchFactor = 3;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideFriction = 0.1;
+		UPROPERTY(EditDefaultsOnly)
+		float SlideBrakingDeceleration =1000.f;
 
 	// Transient
 	UPROPERTY(Transient)
@@ -95,19 +99,24 @@ public:
 
 	virtual bool IsMovingOnGround() const override;
 	virtual bool CanCrouchInCurrentState() const override;
+	virtual float GetMaxSpeed() const override;
+	virtual float GetMaxBrakingDeceleration() const override;
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override; // Checks if we enter slide
+	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	
-	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override; // Checks of we enter slide
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override; // Links to custom PhysSlide function
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
 private:
 	void EnterSlide();
 	void ExitSlide();
+	bool CanSlide();
 	void PhysSlide (float deltaTime, int32 Iterations);
 	bool GetSlideSurface(FHitResult& Hit) const;
 	float GetGroundSlopeFactor();
@@ -130,4 +139,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	bool IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const;
+	UFUNCTION(BlueprintCallable)
+	bool IsMovementMode(EMovementMode InMovementMode) const;
 };
