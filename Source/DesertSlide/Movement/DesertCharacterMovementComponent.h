@@ -64,13 +64,9 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 		UPROPERTY(EditDefaultsOnly)
 		float SlideControllability = 5;
 		UPROPERTY(EditDefaultsOnly)
-		float SlideGroundFriction = 5;
-		UPROPERTY(EditDefaultsOnly)
 		float SlideEnterSpeed = 1200;
 		UPROPERTY(EditDefaultsOnly)
-		float SlideMinSpeed = 700;
-		UPROPERTY(EditDefaultsOnly)
-		float SlideMaxSpeed = 700;
+		float SlideMaxSpeed = 50000;
 		UPROPERTY(EditDefaultsOnly)
 		float SlideEnterImpulse = 500; //TODO: evaluate relevance
 		UPROPERTY(EditDefaultsOnly)
@@ -78,9 +74,9 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 		UPROPERTY(EditDefaultsOnly)
 		float SlideCrouchFactor = 3;
 		UPROPERTY(EditDefaultsOnly)
-		float SlideFriction = 0.1;
+		float SlideFriction = 1;
 		UPROPERTY(EditDefaultsOnly)
-		float SlideBrakingDeceleration =1000.f;
+		float SlideBrakingDeceleration = 1000.f;
 
 	// Transient
 	UPROPERTY(Transient)
@@ -106,6 +102,7 @@ public:
 
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override; // Checks if we enter slide
 	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
+	
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;

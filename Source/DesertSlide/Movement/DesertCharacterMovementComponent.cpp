@@ -209,7 +209,9 @@ void UDesertCharacterMovementComponent::DisplayDebugMessages()
 
 void UDesertCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
-	if ((MovementMode == MOVE_Walking) && Velocity.SizeSquared() > FMath::Square(SlideEnterSpeed))
+	bool bReachedSlidingSpeed = (MovementMode == MOVE_Walking) && Velocity.SizeSquared() > FMath::Square(SlideEnterSpeed);
+	bool bWantsToSlide = (MovementMode == MOVE_Walking) && bWantsToCrouch;
+	if (bReachedSlidingSpeed || bWantsToSlide)
 	{
 		if (CanSlide())
 		{
@@ -294,8 +296,9 @@ bool UDesertCharacterMovementComponent::CanSlide()
 	FName ProfileName = TEXT("BlockAll");
 	bool bValidSurface = GetWorld()->LineTraceTestByProfile(Start, End, ProfileName, DesertSlideCharacterOwner->GetIgnoreCharacterParams());
 	bool bEnoughSpeed = Velocity.SizeSquared() > (FMath::Square(MaxWalkSpeed) - 200);
+	bool bWantsToSlide = bWantsToCrouch;
 	
-	return bValidSurface && bEnoughSpeed;
+	return bValidSurface && (bEnoughSpeed || bWantsToSlide);
 }
 
 void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
@@ -347,7 +350,7 @@ void UDesertCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iterati
 		Acceleration = Acceleration * SlideControllability;
 		
 		// Apply acceleration
-		CalcVelocity(timeTick, GroundFriction, false, GetMaxBrakingDeceleration());
+		CalcVelocity(timeTick, GroundFriction * SlideFriction, false, GetMaxBrakingDeceleration());
 
 
 		// Compute move parameters
