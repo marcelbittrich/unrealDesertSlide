@@ -51,32 +51,44 @@ class DESERTSLIDE_API UDesertCharacterMovementComponent : public UCharacterMovem
 	// Parameters
 
 		// Walk
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Walk")
 		float WalkBaseMaxSpeed = 1000;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Walk")
 		float WalkSlopeSpeedOffset = 1000;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Walk")
 		float WalkBaseAcceleration = 500;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Walk")
 		float WalkSlopeAcceleration = 500;
 
 		// Slide
-		UPROPERTY(EditDefaultsOnly)
-		float SlideControllability = 5;
-		UPROPERTY(EditDefaultsOnly)
-		float SlideEnterSpeed = 1200;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		float SlideControllability = 1;
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		float SlideEnterWalkSpeedOffset = 200;
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
 		float SlideMaxSpeed = 50000;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		float SlideMaxAcceleration = 300;
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
 		float SlideEnterImpulse = 500; //TODO: evaluate relevance
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
 		float SlideGravityForce = 5000;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
 		float SlideCrouchFactor = 3;
-		UPROPERTY(EditDefaultsOnly)
-		float SlideFriction = 1;
-		UPROPERTY(EditDefaultsOnly)
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		// Influences controllability, slows if SlidingFriction is true.
+		float SlideGroundFriction = 8; 
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		// Influences controllability instead of GroundFriction if Separate Friction is true. 
+		float SlideBrakingFriction = 8; 
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		float SlideVelocityFrictionFactor = 1.0f;
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
 		float SlideBrakingDeceleration = 1000.f;
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		bool bSlidingFriction = false;
+		UPROPERTY(EditDefaultsOnly, Category = "Slide")
+		bool bSlideSeparateFriction = false;
 
 	// Transient
 	UPROPERTY(Transient)
@@ -98,6 +110,7 @@ public:
 	virtual float GetMaxSpeed() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
 	
+	virtual void CalcSlideVelocity(float DeltaTime, float Friction, bool bFluid, float BrakingDeceleration);
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override; // Checks if we enter slide
@@ -121,7 +134,9 @@ private:
 	void DisplayDebugMessages();
 
 	float EntryGroundFriction;
-	
+	float EntryBrakingFriction;
+	bool bEntrySeparateFriction;
+	float SlideEnterSpeed;
 public:
 
 	UFUNCTION(BlueprintCallable)
