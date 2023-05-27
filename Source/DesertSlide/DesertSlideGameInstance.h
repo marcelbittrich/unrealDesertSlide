@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MenuInterface.h"
 #include "Engine/GameInstance.h"
 #include "DesertSlideGameInstance.generated.h"
 
@@ -10,17 +11,29 @@
  * 
  */
 UCLASS()
-class DESERTSLIDE_API UDesertSlideGameInstance : public UGameInstance
+class DESERTSLIDE_API UDesertSlideGameInstance : public UGameInstance, public IMenuInterface
 {
 	GENERATED_BODY()
 
 	UDesertSlideGameInstance(const FObjectInitializer & ObjectInitializer);
 	virtual void Init() override;
+
+	UFUNCTION(BlueprintCallable)
+	void LoadInGameMenu();
 	
 public:
-
-
+	UFUNCTION()
+	virtual void QuitGame() override;
 	
+	UFUNCTION()
+	virtual void RestartLevel() override;
+
+	UFUNCTION()
+	virtual void StartRace() override;
+
 private:
-	
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> InGameMenuClass;
+	UPROPERTY()
+	class UMenuWidget* InGameMenu;
 };

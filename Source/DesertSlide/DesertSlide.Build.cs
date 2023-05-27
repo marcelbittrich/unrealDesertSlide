@@ -15,7 +15,8 @@ public class DesertSlide : ModuleRules
 			{
 				"DesertSlide",
 				"DesertSlide/UI",
-				"DesertSlide/RaceLogic"
+				"DesertSlide/RaceLogic",
+				"DesertSlide/MenuSystem"
 			}
 		);
 
