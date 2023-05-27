@@ -19,9 +19,15 @@ class DESERTSLIDE_API UDesertSlideGameInstance : public UGameInstance, public IM
 	virtual void Init() override;
 
 	UFUNCTION(BlueprintCallable)
+	void LoadMainMenu();
+	
+	UFUNCTION(BlueprintCallable)
 	void LoadInGameMenu();
 	
 public:
+	UFUNCTION()
+	virtual void LoadSoloLevel() override;
+	
 	UFUNCTION()
 	virtual void QuitGame() override;
 	
@@ -32,6 +38,12 @@ public:
 	virtual void StartRace() override;
 
 private:
+
+	UPROPERTY()
+	TSubclassOf<class UUserWidget> MainMenuClass;
+	UPROPERTY()
+	class UMenuWidget* MainMenu;
+	
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> InGameMenuClass;
 	UPROPERTY()

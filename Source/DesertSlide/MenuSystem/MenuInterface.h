@@ -22,6 +22,7 @@ class DESERTSLIDE_API IMenuInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	virtual void LoadSoloLevel() = 0;
 	virtual void QuitGame() = 0;
 	virtual void RestartLevel() = 0;
 	virtual void StartRace() = 0;

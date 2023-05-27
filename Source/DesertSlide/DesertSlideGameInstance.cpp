@@ -10,6 +10,8 @@
 
 UDesertSlideGameInstance::UDesertSlideGameInstance(const FObjectInitializer & ObjectInitializer)
 {
+	ConstructorHelpers::FClassFinder<UUserWidget> MainMenuWBPClass(TEXT("/Game/DesertSlide/UI/Menu/WBP_MainMenu"));
+	MainMenuClass = MainMenuWBPClass.Class;
 	ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuWBPClass(TEXT("/Game/DesertSlide/UI/Menu/WBP_InGameMenu"));
 	InGameMenuClass = InGameMenuWBPClass.Class;
 }
@@ -22,6 +24,15 @@ void UDesertSlideGameInstance::Init()
 	
 }
 
+void UDesertSlideGameInstance::LoadMainMenu()
+{
+	if (!MainMenuClass) return;
+	MainMenu = CreateWidget<UMenuWidget>(this, MainMenuClass);
+	if (!MainMenu) return;
+	MainMenu->Setup();
+	MainMenu->SetMenuInterface(this);
+}
+
 void UDesertSlideGameInstance::LoadInGameMenu()
 {
 	if (!InGameMenuClass) return;
@@ -31,13 +42,28 @@ void UDesertSlideGameInstance::LoadInGameMenu()
 	InGameMenu->SetMenuInterface(this);
 }
 
+void UDesertSlideGameInstance::LoadSoloLevel()
+{
+	if (MainMenu)
+	{
+		MainMenu->Teardown();
+	}
+	
+	UWorld* World = GetWorld();
+	if(!World) return;
+
+	World->ServerTravel("/Game/DesertSlide/Maps/MovementTestMap");
+}
+
 void UDesertSlideGameInstance::QuitGame()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Quit Game Instance"));
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	
 	if (PlayerController)
 	{
 		PlayerController->ConsoleCommand("Quit");
+
 	}
 }
 
@@ -55,3 +81,5 @@ void UDesertSlideGameInstance::StartRace()
 		RaceManager->InitializeRace();
 	}
 }
+
+
