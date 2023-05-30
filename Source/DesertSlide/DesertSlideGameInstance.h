@@ -27,6 +27,9 @@ class DESERTSLIDE_API UDesertSlideGameInstance : public UGameInstance, public IM
 public:
 	UFUNCTION()
 	virtual void LoadSoloLevel() override;
+
+	UFUNCTION()
+	virtual void GoToMainMenu() override;
 	
 	UFUNCTION()
 	virtual void QuitGame() override;

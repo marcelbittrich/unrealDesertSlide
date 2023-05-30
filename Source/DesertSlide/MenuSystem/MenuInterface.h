@@ -24,6 +24,7 @@ class DESERTSLIDE_API IMenuInterface
 public:
 	virtual void LoadSoloLevel() = 0;
 	virtual void QuitGame() = 0;
+	virtual void GoToMainMenu() = 0;
 	virtual void RestartLevel() = 0;
 	virtual void StartRace() = 0;
 };

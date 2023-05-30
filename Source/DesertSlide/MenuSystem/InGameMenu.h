@@ -37,5 +37,5 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void Cancel();
 	UFUNCTION()
-	void QuitGame();
+	void LeaveGame();
 };

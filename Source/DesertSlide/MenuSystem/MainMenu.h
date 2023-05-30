@@ -14,7 +14,7 @@ class UGameUserSettings;
 #pragma region OptionEnums
 
 UENUM()
-enum class EScreenMode : uint8
+enum class EScreenMode
 {
 	FullScreen	UMETA(DisplayName = "FullScreen"),
 	Windowed	UMETA(DisplayName = "Windowed"),
@@ -23,7 +23,7 @@ enum class EScreenMode : uint8
 ENUM_RANGE_BY_COUNT(EScreenMode, EScreenMode::Count);
 
 UENUM()
-enum class EResolution : uint8
+enum class EResolution
 {
 	Lower	UMETA(DisplayName = "1280 x 720"),
 	Low		UMETA(DisplayName = "1600 x 900"),
@@ -33,6 +33,40 @@ enum class EResolution : uint8
 	Count UMETA(Hidden)
 };
 ENUM_RANGE_BY_COUNT(EResolution, EResolution::Count);
+
+UENUM()
+enum class EFrameRateLimit
+{
+	Lower	UMETA(DisplayName = "30 FPS"),
+	Low		UMETA(DisplayName = "60 FPS"),
+	Mid		UMETA(DisplayName = "120 FPS"),
+	Highest UMETA(DisplayName = "Unlimited"),
+	Count UMETA(Hidden)
+};
+ENUM_RANGE_BY_COUNT(EFrameRateLimit, EFrameRateLimit::Count);
+
+UENUM()
+enum class EQualitySetting
+{
+	Low,
+	Medium,
+	High,
+	Epic,
+	Count UMETA(Hidden)
+};
+ENUM_RANGE_BY_COUNT(EQualitySetting, EQualitySetting::Count);
+
+UENUM()
+enum class EQualitySelector
+{
+	Shadow,
+	Texture,
+	AntiAliasing,
+	PostProcess,
+	ViewDistance,
+	Count UMETA(Hidden)
+};
+ENUM_RANGE_BY_COUNT(EQualitySelector, EQualitySelector::Count);
 
 #pragma endregion 
 
@@ -73,14 +107,18 @@ private:
 	// Options
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* WindowModeSelect;
+	void GetWindowMode();
 	void SetWindowMode();
 	
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ResolutionSelect;
+	void GetResolution();
 	void SetResolution();
 
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* FrameRateSelect;
+	void GetFrameRateLimit();
+	void SetFrameRateLimit();
 
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ShadowQualitySelect;
@@ -90,6 +128,10 @@ private:
 	UComboBoxString* AntiAliasingSelect;
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* PostProcessSelect;
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* ViewDistanceSelect;
+	void GetQualitySetting(EQualitySelector QualitySelector, UComboBoxString* ComboBox);
+	void SetQualitySetting(EQualitySelector QualitySelector, int QualitySettingIndex);
 	
 	UPROPERTY(meta = (BindWidget))
 	UButton* ApplySettingsButton;
@@ -102,8 +144,8 @@ private:
 	
 	UFUNCTION()
 	void OpenOptionsMenu();
-
-	void ReadOptions();
+	void ReadCurrentSettings();
+	
 	UFUNCTION()
 	void ApplySettings();
 	

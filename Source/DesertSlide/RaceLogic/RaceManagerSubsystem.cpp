@@ -197,6 +197,14 @@ void URaceManagerSubsystem::ClearData()
 {
 	// TODO: Extend to achieve clean start after every initialize
 	CrossedCheckpoints.Empty();
+	CurrentLap = 1;
+	RaceStartTime = 0;
+	RaceEndTime = 0;
+	LapStartTime = 0;
+	LastLapTime = 0;
+	bRaceInitialized = false;
+	bStartCrossed = false;
+	bAllCheckpointsCrossed = false;
 }
 
 bool URaceManagerSubsystem::IsNewCheckpoint(const AActor* NewCheckpoint)

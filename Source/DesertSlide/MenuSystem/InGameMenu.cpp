@@ -19,7 +19,7 @@ bool UInGameMenu::Initialize()
 	CancelInGameMenuButton->OnClicked.AddDynamic(this, &UInGameMenu::Cancel);
 
 	if (!LeaveGameInGameMenuButton) return false;
-	LeaveGameInGameMenuButton->OnClicked.AddDynamic(this, &UInGameMenu::QuitGame);
+	LeaveGameInGameMenuButton->OnClicked.AddDynamic(this, &UInGameMenu::LeaveGame);
 	
 	return true;
 }
@@ -47,11 +47,11 @@ void UInGameMenu::Cancel()
 	Teardown();	
 }
 
-void UInGameMenu::QuitGame()
+void UInGameMenu::LeaveGame()
 {
 	if(MenuInterface)
 	{
 		Teardown();
-		MenuInterface->QuitGame();
+		MenuInterface->GoToMainMenu();
 	}
 }

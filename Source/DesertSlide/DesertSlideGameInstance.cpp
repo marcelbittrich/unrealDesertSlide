@@ -55,6 +55,16 @@ void UDesertSlideGameInstance::LoadSoloLevel()
 	World->ServerTravel("/Game/DesertSlide/Maps/MovementTestMap");
 }
 
+void UDesertSlideGameInstance::GoToMainMenu()
+{
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	
+	if (PlayerController)
+	{
+		PlayerController->ClientTravel("/Game/PuzzlePlatforms/Maps/MainMenu", TRAVEL_Absolute);
+	}
+}
+
 void UDesertSlideGameInstance::QuitGame()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Quit Game Instance"));
@@ -70,7 +80,7 @@ void UDesertSlideGameInstance::QuitGame()
 void UDesertSlideGameInstance::RestartLevel()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Trying to restart"));
-	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), true);
 }
 
 void UDesertSlideGameInstance::StartRace()
