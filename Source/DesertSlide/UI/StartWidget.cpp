@@ -6,7 +6,7 @@
 void UStartWidget::Display(float DisplayTime)
 {
 	Setup();
-
+	
 	/*
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	

@@ -17,7 +17,7 @@ void UCheckpointWidget::Teardown()
 
 void UCheckpointWidget::Display(float SectorTime, float DisplayTime)
 {
-	FString SectorTimeString = "Time: " + FString::SanitizeFloat(SectorTime);
+	FString SectorTimeString = "Time: " + FString::SanitizeFloat(SectorTime, 3);
 	SectorTimeText->SetText(FText::FromString(SectorTimeString));
 
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();

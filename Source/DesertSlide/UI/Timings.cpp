@@ -7,13 +7,13 @@
 
 void UTimings::SetLapTimeText(float Time)
 {
-	FString LapTimeString = "Lap Time:  " + FString::SanitizeFloat(Time);
+	FString LapTimeString = "Lap Time:  " + FString::SanitizeFloat(Time, 2);
 	LapTimeText->SetText(FText::FromString(LapTimeString));
 }
 
 void UTimings::SetLastLapTimeText(float Time)
 {
-	FString LastLapTimeString = "Last Lap:  " + FString::SanitizeFloat(Time);
+	FString LastLapTimeString = "Last Lap:  " + FString::SanitizeFloat(Time, 2);
 	LastLapTimeText->SetText(FText::FromString(LastLapTimeString));
 }
 

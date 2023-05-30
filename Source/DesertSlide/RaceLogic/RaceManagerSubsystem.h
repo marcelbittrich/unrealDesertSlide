@@ -48,6 +48,9 @@ public:
 
 	UFUNCTION()
 	void UpdateCurrentLapUI();
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetStartCountdownTime() const {return StartCountdownTime;};
 	
 private:
 	void ClearData();

@@ -90,10 +90,14 @@ void URaceManagerSubsystem::HandleRaceStart()
 
 void URaceManagerSubsystem::StartCrossed(AActor* TriggeringActor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("StartCrossed"));
 	if (!bRaceInitialized || bRaceEnded) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("StartCrossed: Function"));
 	
 	if (bStartCrossed == false)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("StartCrossed: bStartCrossed false"));
 		RaceStartTime = GetWorld()->GetTime().GetWorldTimeSeconds();
 		LapStartTime = GetWorld()->GetTime().GetWorldTimeSeconds();
 		bStartCrossed = true;
@@ -202,9 +206,11 @@ void URaceManagerSubsystem::ClearData()
 	RaceEndTime = 0;
 	LapStartTime = 0;
 	LastLapTime = 0;
+	bRaceEnded = false;
 	bRaceInitialized = false;
 	bStartCrossed = false;
 	bAllCheckpointsCrossed = false;
+	UE_LOG(LogTemp, Warning, TEXT("Cleared Data"));
 }
 
 bool URaceManagerSubsystem::IsNewCheckpoint(const AActor* NewCheckpoint)
