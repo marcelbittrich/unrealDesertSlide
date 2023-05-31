@@ -18,6 +18,7 @@ public:
 	void SetLapTimeText(float Time);
 	void SetLastLapTimeText(float Time);
 	void SetCurrentLapText(int CurrentLap, int MaxLaps);
+	void SetPersonalBestText(float Time);
 	
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -28,4 +29,7 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CurrentLapText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* PersonalBestText;
 };

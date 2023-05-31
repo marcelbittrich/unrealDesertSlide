@@ -360,8 +360,8 @@ float UDesertCharacterMovementComponent::GetGroundSlopeFactor()
 		FVector HorizontalVelocity = Velocity;
 		HorizontalVelocity.Z = 0;
 		
-		DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + Ground.ImpactNormal * 100, FColor::Green, false, -1, 0, 5);
-		DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + HorizontalVelocity.GetSafeNormal() * 100, FColor::Blue, false, -1, 0, 5);
+		// DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + Ground.ImpactNormal * 100, FColor::Green, false, -1, 0, 5);
+		// DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + HorizontalVelocity.GetSafeNormal() * 100, FColor::Blue, false, -1, 0, 5);
 
 		return FVector::DotProduct(Ground.ImpactNormal, HorizontalVelocity.GetSafeNormal());
 	}
@@ -402,6 +402,7 @@ void UDesertCharacterMovementComponent::ExitSlide()
 	UE_LOG(LogTemp, Warning, TEXT("Exit Slide"));
 	NavAgentProps.bCanCrouch = false;
 
+	// Reset to Entry values
 	GroundFriction = EntryGroundFriction;
 	BrakingFriction = EntryBrakingFriction;
 	bUseSeparateBrakingFriction = bEntrySeparateFriction;

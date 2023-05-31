@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MenuInterface.h"
 #include "Engine/GameInstance.h"
+#include "DesertSlideSaveGame.h"
 #include "DesertSlideGameInstance.generated.h"
 
 /**
@@ -21,10 +22,10 @@ class DESERTSLIDE_API UDesertSlideGameInstance : public UGameInstance, public IM
 	UFUNCTION(BlueprintCallable)
 	void LoadMainMenu();
 	
+public:
 	UFUNCTION(BlueprintCallable)
 	void LoadInGameMenu();
 	
-public:
 	UFUNCTION()
 	virtual void LoadSoloLevel() override;
 
@@ -40,7 +41,17 @@ public:
 	UFUNCTION()
 	virtual void StartRace() override;
 
+	UFUNCTION()
+	FORCEINLINE UDesertSlideSaveGame* GetSaveGame() const {return SaveGame;}
+
+	UFUNCTION()
+	void LoadMapSaveGame();
+	UFUNCTION()
+	void WriteMapSaveGame();
+
 private:
+	void LoadSaveGame(const FString& MapName);
+	void WriteSaveGame(const FString& MapName);
 
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> MainMenuClass;
@@ -51,4 +62,9 @@ private:
 	TSubclassOf<class UUserWidget> InGameMenuClass;
 	UPROPERTY()
 	class UMenuWidget* InGameMenu;
+
+	UPROPERTY()
+	class UDesertSlideSaveGame* SaveGame;
+
+	int UserIndex = 1;
 };

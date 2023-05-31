@@ -4,6 +4,7 @@
 #include "RaceManagerSubsystem.h"
 
 #include "Checkpoint.h"
+#include "DesertSlideGameInstance.h"
 #include "DesertSlidePlayerController.h"
 #include "FinishWidget.h"
 #include "StartWidget.h"
@@ -53,6 +54,14 @@ void URaceManagerSubsystem::Deinitialize()
 void URaceManagerSubsystem::InitializeRace()
 {
 	ClearData();
+
+	if (UDesertSlideGameInstance* GameInstance = Cast<UDesertSlideGameInstance>(GetGameInstance()))
+	{
+		if (UDesertSlideSaveGame* SaveGame = GameInstance->GetSaveGame())
+		{
+			PersonalBestTime = SaveGame->PersonalBestTime;
+		}
+	}
 	
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), CheckpointClass, AllCheckpoints);
 	UE_LOG(LogTemp, Warning, TEXT("Found %i Checkpoints"), AllCheckpoints.Num());
@@ -111,8 +120,14 @@ void URaceManagerSubsystem::FinishCrossed(AActor* TriggeringActor)
 	
 	if (bAllCheckpointsCrossed)
 	{
+		if (GetCurrentLapTime() < PersonalBestTime || PersonalBestTime == 0)
+		{
+			HandleNewPersonalBest();
+		}
+		
 		bool bDisplayFinished = ( CurrentLap == Laps );
 		FinishUI->Display(GetCurrentLapTime(), CurrentLap, bDisplayFinished);
+		
 		if (CurrentLap < Laps)
 		{
 			HandleNewLap();
@@ -152,6 +167,22 @@ void URaceManagerSubsystem::HandleRaceEnd()
 	UpdateLastLapTimeUI();
 	UpdateCurrentLapUI();
 	bRaceEnded = true;
+}
+
+void URaceManagerSubsystem::HandleNewPersonalBest()
+{
+	PersonalBestTime = GetCurrentLapTime();
+	UpdatePersonalBestTimeUI();
+	
+	if (UDesertSlideGameInstance* GameInstance = Cast<UDesertSlideGameInstance>(GetGameInstance()))
+	{
+		if(UDesertSlideSaveGame* SaveGame = GameInstance->GetSaveGame())
+		{
+			SaveGame->PersonalBestTime = PersonalBestTime;
+			UE_LOG(LogTemp, Warning, TEXT("Wrote PB into SaveGame"));
+		}
+		GameInstance->WriteMapSaveGame();
+	}
 }
 
 void URaceManagerSubsystem::CheckpointCrossed(AActor* Checkpoint, AActor* TriggeringActor)
@@ -233,10 +264,11 @@ void URaceManagerSubsystem::AddTimingsUI()
 	{
 		TimingsUI->Setup();
 	}
-
+	
 	UpdateLapTimeUI();
 	UpdateCurrentLapUI();
 	UpdateLastLapTimeUI();
+	UpdatePersonalBestTimeUI();
 }
 
 void URaceManagerSubsystem::UpdateLapTimeUI()
@@ -261,6 +293,15 @@ void URaceManagerSubsystem::UpdateCurrentLapUI()
 	if (TimingsUI)
 	{
 		TimingsUI->SetCurrentLapText(CurrentLap, Laps);
+	}
+}
+
+void URaceManagerSubsystem::UpdatePersonalBestTimeUI()
+{
+	if (TimingsUI)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RaceManager: SetPersonalBestTime %f"), PersonalBestTime);
+		TimingsUI->SetPersonalBestText(PersonalBestTime);
 	}
 }
 

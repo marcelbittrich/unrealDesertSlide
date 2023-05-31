@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DesertSlideCharacter.h"
+
+#include "DesertSlideGameInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -88,6 +90,8 @@ void ADesertSlideCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADesertSlideCharacter::Look);
 
+		//Open Menu
+		EnhancedInputComponent->BindAction(OpenMenuAction, ETriggerEvent::Triggered, this, &ADesertSlideCharacter::OpenMenu);
 	}
 
 }
@@ -128,6 +132,14 @@ void ADesertSlideCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void ADesertSlideCharacter::OpenMenu()
+{
+	if(UDesertSlideGameInstance* DesertSlideGameInstance = Cast<UDesertSlideGameInstance>(GetGameInstance()))
+	{
+		DesertSlideGameInstance->LoadInGameMenu();	
+	}
+}
+
 FCollisionQueryParams ADesertSlideCharacter::GetIgnoreCharacterParams() const
 {
 	FCollisionQueryParams Params;
@@ -139,7 +151,6 @@ FCollisionQueryParams ADesertSlideCharacter::GetIgnoreCharacterParams() const
 
 	return Params;
 }
-
 
 
 

@@ -31,6 +31,7 @@ public:
 	void HandleRaceStart();
 	void HandleNewLap();
 	void HandleRaceEnd();
+	void HandleNewPersonalBest();
 
 	float GetCurrentLapTime();
 
@@ -48,6 +49,9 @@ public:
 
 	UFUNCTION()
 	void UpdateCurrentLapUI();
+
+	UFUNCTION()
+	void UpdatePersonalBestTimeUI();
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetStartCountdownTime() const {return StartCountdownTime;};
@@ -77,6 +81,8 @@ private:
 	float RaceEndTime = 0;
 	float LapStartTime = 0;
 	float LastLapTime = 0;
+
+	float PersonalBestTime = 0;
 	
 	UPROPERTY()
 	TSubclassOf<class ACheckpoint> CheckpointClass;

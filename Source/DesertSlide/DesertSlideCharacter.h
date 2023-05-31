@@ -39,6 +39,10 @@ class ADesertSlideCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/** OpenMenu Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* OpenMenuAction;
+
 public:
 	ADesertSlideCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -60,6 +64,8 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	void OpenMenu();
 
 public:
 	/** Returns CameraBoom subobject **/

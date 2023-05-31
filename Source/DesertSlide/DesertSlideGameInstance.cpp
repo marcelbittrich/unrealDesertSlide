@@ -3,6 +3,7 @@
 
 #include "DesertSlideGameInstance.h"
 
+#include "DesertSlideSaveGame.h"
 #include "MenuWidget.h"
 #include "RaceManagerSubsystem.h"
 #include "Blueprint/UserWidget.h"
@@ -20,6 +21,7 @@ void UDesertSlideGameInstance::Init()
 {
 	Super::Init();
 
+	
 	UE_LOG(LogTemp, Warning, TEXT("GameInstace Initialized"));
 	
 }
@@ -73,7 +75,6 @@ void UDesertSlideGameInstance::QuitGame()
 	if (PlayerController)
 	{
 		PlayerController->ConsoleCommand("Quit");
-
 	}
 }
 
@@ -88,7 +89,52 @@ void UDesertSlideGameInstance::StartRace()
 	URaceManagerSubsystem* RaceManager = GetSubsystem<URaceManagerSubsystem>(this);
 	if (RaceManager)
 	{
+		LoadMapSaveGame();
 		RaceManager->InitializeRace();
+	}
+}
+
+void UDesertSlideGameInstance::LoadMapSaveGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Tried Loading SaveGame for %s"), *GetWorld()->GetMapName());
+	LoadSaveGame(GetWorld()->GetMapName());
+}
+
+void UDesertSlideGameInstance::WriteMapSaveGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Tried Saving SaveGame for %s"), *GetWorld()->GetMapName());
+	WriteSaveGame(GetWorld()->GetMapName());
+}
+
+void UDesertSlideGameInstance::LoadSaveGame(const FString& MapName)
+{
+	if (!UGameplayStatics::DoesSaveGameExist(MapName, UserIndex))
+	{
+		SaveGame = Cast<UDesertSlideSaveGame>(UGameplayStatics::CreateSaveGameObject(UDesertSlideSaveGame::StaticClass()));
+		if (SaveGame)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Created new SaveGame"));
+		}
+	}
+	else
+	{
+		if (Cast<UDesertSlideSaveGame>(UGameplayStatics::LoadGameFromSlot(MapName, UserIndex)))
+		{
+			SaveGame = Cast<UDesertSlideSaveGame>(UGameplayStatics::LoadGameFromSlot(MapName, UserIndex));
+			UE_LOG(LogTemp, Warning, TEXT("Loaded existing SaveGame"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("LoadSaveGame failed"));
+		}
+	}
+}
+
+void UDesertSlideGameInstance::WriteSaveGame(const FString& MapName)
+{
+	if (SaveGame)
+	{
+		UGameplayStatics::AsyncSaveGameToSlot(SaveGame, MapName, UserIndex);
 	}
 }
 
