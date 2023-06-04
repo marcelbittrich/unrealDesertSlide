@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Math/UnrealMathUtility.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 #pragma region Saved Move
 
@@ -293,6 +294,8 @@ void UDesertCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTic
 
 void UDesertCharacterMovementComponent::DisplayDebugMessages()
 {
+	if (!bDebug) return;
+	
 	FString VelocityString = FString::SanitizeFloat(Velocity.Size());
 	GEngine->AddOnScreenDebugMessage(1,1,FColor::Green, "Speed: " + VelocityString);
 
@@ -359,10 +362,20 @@ float UDesertCharacterMovementComponent::GetGroundSlopeFactor()
 	{
 		FVector HorizontalVelocity = Velocity;
 		HorizontalVelocity.Z = 0;
-		
-		// DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + Ground.ImpactNormal * 100, FColor::Green, false, -1, 0, 5);
-		// DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + HorizontalVelocity.GetSafeNormal() * 100, FColor::Blue, false, -1, 0, 5);
 
+		if (bDebug)
+		{
+			DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + Ground.ImpactNormal * 100, FColor::Green, false, -1, 0, 5);
+			DrawDebugLine(GetWorld(), Ground.ImpactPoint, Ground.ImpactPoint + HorizontalVelocity.GetSafeNormal() * 100, FColor::Blue, false, -1, 0, 5);
+
+			if (Ground.PhysMaterial.Get())
+			{
+				
+				FString GroundPhysicalMaterial = Ground.PhysMaterial.Get()->GetName();
+				GEngine->AddOnScreenDebugMessage(99,1,FColor::Yellow, GroundPhysicalMaterial);
+			}
+		}
+		
 		return FVector::DotProduct(Ground.ImpactNormal, HorizontalVelocity.GetSafeNormal());
 	}
 	else
@@ -634,8 +647,13 @@ bool UDesertCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const
 {
 	FVector Start = UpdatedComponent->GetComponentLocation();
 	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.5f * FVector::DownVector;
+	
 	FName ProfileName = TEXT("BlockAll");
-	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, DesertSlideCharacterOwner->GetIgnoreCharacterParams());
+	
+	FCollisionQueryParams Params = DesertSlideCharacterOwner->GetIgnoreCharacterParams();
+	Params.bReturnPhysicalMaterial = true;
+	
+	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, Params);
 }
 
 #pragma endregion 
@@ -672,4 +690,4 @@ bool UDesertCharacterMovementComponent::IsMovementMode(EMovementMode InMovementM
 	return InMovementMode == MovementMode;
 }
 
-#pragma endregion 
+#pragma endregion

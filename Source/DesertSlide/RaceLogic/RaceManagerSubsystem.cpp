@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/CheckpointWidget.h"
 #include "UI/Timings.h"
+#include "Engine/World.h"
 
 URaceManagerSubsystem::URaceManagerSubsystem()
 {
@@ -70,6 +71,12 @@ void URaceManagerSubsystem::InitializeRace()
 	bRaceInitialized = true;
 	UE_LOG(LogTemp, Warning, TEXT("Race Manager RaceInitialized"));
 	HandleRaceStart();
+}
+
+void URaceManagerSubsystem::DeinitializeRace()
+{
+	ClearData();
+	UE_LOG(LogTemp, Warning, TEXT("RaceDeinitialized"));
 }
 
 void URaceManagerSubsystem::HandleRaceStart()

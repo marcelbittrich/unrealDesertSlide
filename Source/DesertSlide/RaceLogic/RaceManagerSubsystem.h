@@ -23,7 +23,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void InitializeRace();
-
+	void DeinitializeRace();
+	
 	void StartCrossed(AActor* TriggeringActor);
 	void FinishCrossed(AActor* TriggeringActor);
 	void CheckpointCrossed(AActor* Checkpoint, AActor* TriggeringActor);
@@ -57,6 +58,7 @@ public:
 	FORCEINLINE float GetStartCountdownTime() const {return StartCountdownTime;};
 	
 private:
+	
 	void ClearData();
 	bool IsNewCheckpoint(const AActor* Checkpoint);
 	
@@ -75,7 +77,7 @@ private:
 
 	float StartCountdownTime = 3;
 	
-	uint8 Laps = 2;
+	uint8 Laps = 10;
 	uint8 CurrentLap = 1;
 	float RaceStartTime = 0;
 	float RaceEndTime = 0;

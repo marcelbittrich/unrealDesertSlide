@@ -20,7 +20,6 @@ UDesertSlideGameInstance::UDesertSlideGameInstance(const FObjectInitializer & Ob
 void UDesertSlideGameInstance::Init()
 {
 	Super::Init();
-
 	
 	UE_LOG(LogTemp, Warning, TEXT("GameInstace Initialized"));
 	
@@ -54,7 +53,7 @@ void UDesertSlideGameInstance::LoadSoloLevel()
 	UWorld* World = GetWorld();
 	if(!World) return;
 
-	World->ServerTravel("/Game/DesertSlide/Maps/MovementTestMap");
+	World->ServerTravel("/Game/DesertSlide/Maps/RacePrototype02");
 }
 
 void UDesertSlideGameInstance::GoToMainMenu()
@@ -63,7 +62,13 @@ void UDesertSlideGameInstance::GoToMainMenu()
 	
 	if (PlayerController)
 	{
-		PlayerController->ClientTravel("/Game/PuzzlePlatforms/Maps/MainMenu", TRAVEL_Absolute);
+		PlayerController->ClientTravel("/Game/DesertSlide/Maps/MainMenuMap", TRAVEL_Absolute);
+	}
+	
+	URaceManagerSubsystem* RaceManager = GetSubsystem<URaceManagerSubsystem>(this);
+	if (RaceManager)
+	{
+		RaceManager->DeinitializeRace();
 	}
 }
 

@@ -148,7 +148,6 @@ FCollisionQueryParams ADesertSlideCharacter::GetIgnoreCharacterParams() const
 	GetAllChildActors(CharacterChildren);
 	Params.AddIgnoredActors(CharacterChildren);
 	Params.AddIgnoredActor(this);
-
 	return Params;
 }
 

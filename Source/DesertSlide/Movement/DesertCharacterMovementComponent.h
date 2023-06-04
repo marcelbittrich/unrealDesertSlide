@@ -153,4 +153,7 @@ public:
 	bool IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const;
 	UFUNCTION(BlueprintCallable)
 	bool IsMovementMode(EMovementMode InMovementMode) const;
+	
+	UPROPERTY(EditAnywhere)
+	bool bDebug = false;
 };
