@@ -16,10 +16,19 @@ class DESERTSLIDE_API ADesertSlidePlayerCameraManager : public APlayerCameraMana
 
 	UPROPERTY(EditDefaultsOnly)
 	float CrouchBlendDuration = 0.5;
-	float CrouchBlendTime = 0;	
+	float CrouchBlendTime = 0;
 
+	UPROPERTY(EditDefaultsOnly)
+	float SlideCameraBoomLengthOffset = 200.f;
+	float BoomLengthBlendDuration = 5;
+	float BoomLengthBlendTime = 0;
+	float BoomLengthDefault = 500;
+	bool bDefaultSet = false;
+	
 public:
 	ADesertSlidePlayerCameraManager();
 
 	virtual void UpdateViewTarget(FTViewTarget& OutVT, float DeltaTime) override;
+	void UpdatePOVLocation(FTViewTarget& OutVT, class ADesertSlideCharacter* DesertSlideCharacter, float DeltaTime);
+	void UpdateCameraBoomLength(class ADesertSlideCharacter* DesertSlideCharacter, float DeltaTime);
 };
