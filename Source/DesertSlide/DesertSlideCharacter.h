@@ -54,6 +54,7 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	void EnableAutoRotate();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	class UDesertCharacterMovementComponent* DesertCharacterMovementComponent;

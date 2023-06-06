@@ -3,6 +3,7 @@
 #include "DesertSlideCharacter.h"
 
 #include "DesertSlideGameInstance.h"
+#include "DesertSlidePlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -89,6 +90,7 @@ void ADesertSlideCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADesertSlideCharacter::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::None, this, &ADesertSlideCharacter::EnableAutoRotate);
 
 		//Open Menu
 		EnhancedInputComponent->BindAction(OpenMenuAction, ETriggerEvent::Triggered, this, &ADesertSlideCharacter::OpenMenu);
@@ -130,7 +132,21 @@ void ADesertSlideCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+
+	if (ADesertSlidePlayerController* PlayerController = Cast<ADesertSlidePlayerController>(Controller))
+	{
+		PlayerController->bAutoRotate = false;
+	}
 }
+
+void ADesertSlideCharacter::EnableAutoRotate()
+{
+	if (ADesertSlidePlayerController* PlayerController = Cast<ADesertSlidePlayerController>(Controller))
+	{
+		PlayerController->bAutoRotate = true;
+	}
+}
+
 
 void ADesertSlideCharacter::OpenMenu()
 {
