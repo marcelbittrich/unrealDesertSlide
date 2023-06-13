@@ -29,9 +29,21 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UButton* LeaveGameInGameMenuButton;
 
+	//UPROPERTY(meta = (BindWidget))
+	//class UCheckBox* ReadyToRaceCheckbox;
+
+	UPROPERTY(meta = (BindWidget))
+	class UCheckBox* FollowCamCheckBox;
+
 	UFUNCTION(BlueprintCallable)
 	void StartRace();
 
+	UFUNCTION()
+	void HandleReadyToRaceChange(bool bReady);
+
+	UFUNCTION()
+	void HandleFollowCamChange(bool bFollowCam);
+	
 	UFUNCTION(BlueprintCallable)
 	void Restart();
 	UFUNCTION(BlueprintCallable)

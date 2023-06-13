@@ -26,7 +26,7 @@ public:
 
 	UPROPERTY()
 	bool bAutoRotate = true;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bFollowCam = false;
 	UPROPERTY(EditAnywhere)
 	float AutoRotatePitchAngle = 10.f;

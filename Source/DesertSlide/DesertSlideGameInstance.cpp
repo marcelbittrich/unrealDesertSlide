@@ -99,6 +99,13 @@ void UDesertSlideGameInstance::StartRace()
 	}
 }
 
+void UDesertSlideGameInstance::HandleFollowCamChange(bool bFollowCamChange)
+{
+	ADesertSlidePlayerController* PlayerController = Cast<ADesertSlidePlayerController>(GetFirstLocalPlayerController());
+	if (!PlayerController) return;
+
+	PlayerController->bFollowCam = bFollowCamChange;
+}
 void UDesertSlideGameInstance::LoadMapSaveGame()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Tried Loading SaveGame for %s"), *GetWorld()->GetMapName());

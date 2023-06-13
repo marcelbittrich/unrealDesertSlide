@@ -40,9 +40,10 @@ void ADesertSlidePlayerController::AutoRotateCamera(float DeltaSeconds)
 		FVector CameraViewDirection = CurrentControlRotation.Vector();
 		FVector VelocityDirection = Velocity.GetSafeNormal();
 
-		FRotator DeltaRotation =  VelocityDirection.Rotation() + FRotator(-AutoRotatePitchAngle, 0, 0) - CameraViewDirection.Rotation();
+		FRotator DeltaRotation = FRotator(-AutoRotatePitchAngle, VelocityDirection.Rotation().Yaw, 0) - CameraViewDirection.Rotation();
 		FRotator PartialDeltaRotation = FMath::InterpEaseInOut(FRotator::ZeroRotator, DeltaRotation, AutoRotateInterpSpeed * DeltaSeconds, 1.f);
 
 		SetControlRotation(CurrentControlRotation + PartialDeltaRotation);
 	}
 }
+

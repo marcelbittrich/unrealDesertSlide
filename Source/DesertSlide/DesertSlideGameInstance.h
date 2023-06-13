@@ -42,6 +42,9 @@ public:
 	virtual void StartRace() override;
 
 	UFUNCTION()
+    virtual void HandleFollowCamChange(bool bFollowCam) override;
+
+	UFUNCTION()
 	FORCEINLINE UDesertSlideSaveGame* GetSaveGame() const {return SaveGame;}
 
 	UFUNCTION()

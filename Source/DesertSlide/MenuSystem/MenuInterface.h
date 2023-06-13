@@ -27,4 +27,5 @@ public:
 	virtual void GoToMainMenu() = 0;
 	virtual void RestartLevel() = 0;
 	virtual void StartRace() = 0;
+	virtual void HandleFollowCamChange(bool bFollowCam) = 0;
 };
