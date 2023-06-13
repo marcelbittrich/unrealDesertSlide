@@ -6,6 +6,8 @@
 #include "MenuInterface.h"
 #include "Engine/GameInstance.h"
 #include "DesertSlideSaveGame.h"
+#include "Interfaces/OnlineSessionInterface.h"
+
 #include "DesertSlideGameInstance.generated.h"
 
 /**
@@ -42,6 +44,9 @@ public:
 	virtual void StartRace() override;
 
 	UFUNCTION()
+	virtual void HandlePlayerReadyChange(bool bReady) override;
+	
+	UFUNCTION()
     virtual void HandleFollowCamChange(bool bFollowCam) override;
 
 	UFUNCTION()
@@ -52,6 +57,17 @@ public:
 	UFUNCTION()
 	void WriteMapSaveGame();
 
+	UFUNCTION()
+	virtual void RefreshServerList() override;
+	
+	UFUNCTION(Exec)
+	virtual void Host(FString& ServerName) override;
+	
+	UFUNCTION(Exec)
+	virtual void Join(uint32 Index) override;
+
+	void StartSession();
+
 private:
 	void LoadSaveGame(const FString& MapName);
 	void WriteSaveGame(const FString& MapName);
@@ -59,7 +75,7 @@ private:
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> MainMenuClass;
 	UPROPERTY()
-	class UMenuWidget* MainMenu;
+	class UMainMenu* MainMenu;
 	
 	UPROPERTY()
 	TSubclassOf<class UUserWidget> InGameMenuClass;
@@ -70,4 +86,17 @@ private:
 	class UDesertSlideSaveGame* SaveGame;
 
 	int UserIndex = 1;
+
+	IOnlineSessionPtr SessionInterface;
+	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
+	UPROPERTY()
+	FString NewServerName;
+
+	void OnCreateSessionComplete(FName SessionName, bool Success);
+	void OnDestroySessionComplete(FName SessionName, bool Success);
+	void CreateSession();
+	void OnFindSessionsComplete(bool Success);
+	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+	void OnNetworkFailure(UWorld* World, UNetDriver* NetDriver , ENetworkFailure::Type FailureType, const FString& ErrorString);
 };

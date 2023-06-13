@@ -18,6 +18,7 @@ class DESERTSLIDE_API UMenuWidget : public UUserWidget
 public:
 	void SetMenuInterface(IMenuInterface* Interface);
 	void Setup();
+	UFUNCTION(BlueprintCallable)
 	void Teardown();
 	
 protected:

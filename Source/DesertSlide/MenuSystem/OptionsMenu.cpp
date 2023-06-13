@@ -6,11 +6,6 @@
 #include "Components/ComboBoxString.h"
 #include "GameFramework/GameUserSettings.h"
 
-UOptionsMenu::UOptionsMenu(const FObjectInitializer& ObjectInitializer)
-{
-	
-}
-
 bool UOptionsMenu::Initialize()
 {
 	bool Success = Super::Initialize();

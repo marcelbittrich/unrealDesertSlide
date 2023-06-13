@@ -7,9 +7,13 @@
 ADesertSlideGameMode::ADesertSlideGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/DesertSlide/Characters/BP_DesertSlideCharacter"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Default Pawn for GameMode not found!"));
 	}
 }

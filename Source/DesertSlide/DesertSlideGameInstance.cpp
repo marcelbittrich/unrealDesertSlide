@@ -3,11 +3,23 @@
 
 #include "DesertSlideGameInstance.h"
 
+#include "DesertSlideGameState.h"
+#include "DesertSlidePlayerController.h"
 #include "DesertSlideSaveGame.h"
+#include "MainMenu.h"
 #include "MenuWidget.h"
 #include "RaceManagerSubsystem.h"
 #include "Blueprint/UserWidget.h"
+#include "GameFramework/GameState.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "OnlineSubsystem.h"
+#include "OnlineSessionSettings.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "Online/OnlineSessionNames.h"
+
+const static FName SESSION_NAME = NAME_GameSession;
+const static FName SERVERNAME_SETTINGS_KEY = TEXT("ServerName");
 
 UDesertSlideGameInstance::UDesertSlideGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -20,6 +32,27 @@ UDesertSlideGameInstance::UDesertSlideGameInstance(const FObjectInitializer & Ob
 void UDesertSlideGameInstance::Init()
 {
 	Super::Init();
+
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	
+	if (OnlineSubsystem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found OnlineSubsystem: %s"), *OnlineSubsystem->GetSubsystemName().ToString());
+		
+		SessionInterface = OnlineSubsystem->GetSessionInterface();
+		if (SessionInterface.IsValid())
+		{
+			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UDesertSlideGameInstance::OnCreateSessionComplete);
+			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UDesertSlideGameInstance::OnDestroySessionComplete);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UDesertSlideGameInstance::OnFindSessionsComplete);
+			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UDesertSlideGameInstance::OnJoinSessionComplete);
+		}
+	}
+
+	if (GEngine)
+	{
+		GEngine->OnNetworkFailure().AddUObject(this, &UDesertSlideGameInstance::OnNetworkFailure);
+	}
 	
 	UE_LOG(LogTemp, Warning, TEXT("GameInstace Initialized"));
 	
@@ -28,7 +61,7 @@ void UDesertSlideGameInstance::Init()
 void UDesertSlideGameInstance::LoadMainMenu()
 {
 	if (!MainMenuClass) return;
-	MainMenu = CreateWidget<UMenuWidget>(this, MainMenuClass);
+	MainMenu = CreateWidget<UMainMenu>(this, MainMenuClass);
 	if (!MainMenu) return;
 	MainMenu->Setup();
 	MainMenu->SetMenuInterface(this);
@@ -45,6 +78,7 @@ void UDesertSlideGameInstance::LoadInGameMenu()
 
 void UDesertSlideGameInstance::LoadSoloLevel()
 {
+
 	if (MainMenu)
 	{
 		MainMenu->Teardown();
@@ -99,6 +133,25 @@ void UDesertSlideGameInstance::StartRace()
 	}
 }
 
+void UDesertSlideGameInstance::HandlePlayerReadyChange(bool bReady)
+{
+	// TODO: Rework Player Ready Communication
+	
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (!PlayerController) return;
+	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerReadyChange got Player Controller"));
+	
+	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+	if (!GameMode) return;
+	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerReadyChange got Game Mode"));
+	
+	ADesertSlideGameState* GameState = GameMode->GetGameState<ADesertSlideGameState>();
+	if (!GameState) return;
+	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerReadyChange got Game State"));
+	
+	GameState->ChangePlayerReady(PlayerController, bReady);
+}
+
 void UDesertSlideGameInstance::HandleFollowCamChange(bool bFollowCamChange)
 {
 	ADesertSlidePlayerController* PlayerController = Cast<ADesertSlidePlayerController>(GetFirstLocalPlayerController());
@@ -106,6 +159,9 @@ void UDesertSlideGameInstance::HandleFollowCamChange(bool bFollowCamChange)
 
 	PlayerController->bFollowCam = bFollowCamChange;
 }
+
+#pragma region SaveGame
+
 void UDesertSlideGameInstance::LoadMapSaveGame()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Tried Loading SaveGame for %s"), *GetWorld()->GetMapName());
@@ -150,4 +206,162 @@ void UDesertSlideGameInstance::WriteSaveGame(const FString& MapName)
 	}
 }
 
+#pragma endregion 
 
+void UDesertSlideGameInstance::RefreshServerList()
+{
+	SessionSearch = MakeShareable(new FOnlineSessionSearch());
+	if (SessionSearch.IsValid())
+	{
+		//SessionSearch->bIsLanQuery = (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL");
+		SessionSearch->MaxSearchResults = 100;
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+		UE_LOG(LogTemp, Warning, TEXT("Start Session Search"),);
+	}
+}
+
+void UDesertSlideGameInstance::Host(FString& ServerName)
+{
+	NewServerName = ServerName;
+	
+	if (SessionInterface.IsValid())
+	{
+		FNamedOnlineSession* ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
+		if (ExistingSession)
+		{
+			SessionInterface->DestroySession(SESSION_NAME);
+		}
+		else
+		{
+			CreateSession();	
+		}
+	}
+}
+
+void UDesertSlideGameInstance::StartSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		SessionInterface->StartSession(SESSION_NAME);
+	}
+}
+
+void UDesertSlideGameInstance::OnDestroySessionComplete(FName SessionName, bool Success)
+{
+	if (Success)
+	{
+		CreateSession();
+	}
+}
+
+void UDesertSlideGameInstance::CreateSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		FOnlineSessionSettings SessionSettings;
+		
+		SessionSettings.bIsLANMatch = (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL");
+		
+		SessionSettings.NumPublicConnections = 4;
+		SessionSettings.bShouldAdvertise = true;
+		SessionSettings.bUsesPresence = true;
+		SessionSettings.bUseLobbiesIfAvailable = true;
+		SessionSettings.Set(SERVERNAME_SETTINGS_KEY, NewServerName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+		
+		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+	}
+}
+
+void UDesertSlideGameInstance::OnCreateSessionComplete(FName SessionName, bool Success)
+{
+	if(!Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not create Session"));
+		return;
+	}
+	
+	if (MainMenu)
+	{
+		MainMenu->Teardown();
+	}
+	
+	UEngine* Engine = GetEngine();
+	if (!Engine) return;
+
+	Engine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Hosting"));
+
+	UWorld* World = GetWorld();
+	if(!World) return;
+
+	World->ServerTravel("/Game/DesertSlide/Maps/RacePrototype02?listen");
+}
+
+void UDesertSlideGameInstance::OnFindSessionsComplete(bool Success)
+{
+	if (Success && SessionSearch.IsValid() && MainMenu)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Session Search Finished"));
+		
+		TArray<FOnlineSessionSearchResult> FoundSessions = SessionSearch->SearchResults;
+		TArray<FServerData> ServerNames;
+		
+		for (FOnlineSessionSearchResult& SearchResult : FoundSessions)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Found Session: %s"), *SearchResult.GetSessionIdStr());
+			FServerData Data;
+			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
+			Data.CurrentPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections;
+			Data.HostUserName = SearchResult.Session.OwningUserName;
+			FString ServerName;
+			if (SearchResult.Session.SessionSettings.Get(SERVERNAME_SETTINGS_KEY, ServerName))
+				Data.Name = ServerName;
+			
+			ServerNames.Add(Data);
+		}
+		
+		MainMenu->SetServerList(ServerNames);
+	}
+}
+
+void UDesertSlideGameInstance::Join(uint32 Index)
+{
+	if (!SessionInterface) return;
+	if (!SessionSearch) return;
+	
+	if (MainMenu)
+	{
+		MainMenu->Teardown();
+	}
+
+	SessionInterface->JoinSession(0, SESSION_NAME, SessionSearch->SearchResults[Index]);
+}
+
+void UDesertSlideGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	FString ConnectInfo;
+	bool Success = SessionInterface->GetResolvedConnectString(SessionName, ConnectInfo);
+
+	if (!Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not get connect string."));
+		return;
+	}
+	
+	if (UEngine* Engine = GetEngine())
+	{
+		const FString JoinString = "Joining " + ConnectInfo;
+		Engine->AddOnScreenDebugMessage(-1, 5, FColor::Green, *JoinString);
+	}
+	
+	if (APlayerController* PlayerController = GetFirstLocalPlayerController())
+	{
+		PlayerController->ClientTravel(ConnectInfo, TRAVEL_Absolute);
+	}
+}
+
+void UDesertSlideGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
+	const FString& ErrorString)
+{
+	GoToMainMenu();
+}

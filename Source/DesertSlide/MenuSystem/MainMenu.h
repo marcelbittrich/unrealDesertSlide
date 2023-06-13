@@ -12,37 +12,25 @@ class UComboBoxString;
 class UButton;
 class UGameUserSettings;
 
-#pragma region OptionEnums
-UENUM()
-enum class EQualitySetting
+USTRUCT()
+struct FServerData
 {
-	Low,
-	Medium,
-	High,
-	Epic,
-	Count UMETA(Hidden)
-};
-ENUM_RANGE_BY_COUNT(EQualitySetting, EQualitySetting::Count);
+	GENERATED_BODY()
 
-UENUM()
-enum class EQualitySelector
-{
-	Shadow,
-	Texture,
-	AntiAliasing,
-	PostProcess,
-	ViewDistance,
-	Count UMETA(Hidden)
+	FString Name;
+	uint8 CurrentPlayers;
+	uint8 MaxPlayers;
+	FString HostUserName;
 };
-ENUM_RANGE_BY_COUNT(EQualitySelector, EQualitySelector::Count);
-
-#pragma endregion 
 
 UCLASS()
 class DESERTSLIDE_API UMainMenu : public UOptionsMenu
 {
 	GENERATED_BODY()
-
+	
+public:
+	UMainMenu(const FObjectInitializer& ObjectInitializer);
+	
 protected:
 	virtual bool Initialize() override;
 
@@ -56,6 +44,14 @@ private:
 	class UWidget* Selector;
 	UPROPERTY(meta = (BindWidget))
 	class UWidget* Options;
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* Warning;
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* MultiplayerMenu;
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* HostMenu;
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* JoinMenu;
 	
 	// Selector
 	UPROPERTY(meta = (BindWidget))
@@ -73,13 +69,87 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* ApplySettingsButton;
 
+	// Warning
+	UPROPERTY(meta = (BindWidget))
+	UButton* BackWarningButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* GotItWarningButton;
+
+	// Multiplayer Menu
+	UPROPERTY(meta = (BindWidget))
+	UButton* JoinMultiplayerButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* HostMultiplayerButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BackMultiplayerButton;
+
+	// Host Menu
+	UPROPERTY(meta = (BindWidget))
+	UButton* CancelHostMenuButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* HostHostMenuButton;
+	UPROPERTY(meta = (BindWidget))
+	class UEditableTextBox* ServerNameTextBox;
+
+	// Join Menu
+	UPROPERTY(meta = (BindWidget))
+	UButton* CancelJoinMenuButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* ConnectJoinMenuButton;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* SearchingText;
+
+	// Init
+	bool InitSelector();
+	bool InitOptions();
+	bool InitWarning();
+	bool InitMultiplayerMenu();
+	bool InitHostMenu();
+	bool InitJoinMenu();
+
+	// Open
 	UFUNCTION()
-	void StartSoloGame();
-	
+	void OpenSelector();
 	UFUNCTION()
 	void OpenOptionsMenu();
-	void ReadCurrentSettings();
+	UFUNCTION()
+	void OpenWarning();
+	UFUNCTION()
+	void OpenMultiplayerMenu();
+	UFUNCTION()
+	void OpenHostMenu();
+	UFUNCTION()
+	void OpenJoinMenu();
 	
+	
+	UFUNCTION()
+	void StartSoloGame();
+
+	// Multiplayer functions
+public:
+	void SetServerList(TArray<FServerData>& ServerNames);
+	void SelectIndex(uint32 Index);
+	
+private:
+	UFUNCTION()
+	void HostServer();
+	UFUNCTION()
+	void JoinServer();
+
+	UPROPERTY()
+	TSubclassOf<class UServerRow> ServerRowClass;
+	
+	UPROPERTY()
+	class UServerRow* ServerRow;
+	UPROPERTY(meta = (BindWidget)) 
+	class UScrollBox* ServerList;
+	
+	TOptional<uint32> SelectedIndex;
+	void UpdateServerRows();
+
+	// Options functions
+	
+	void ReadCurrentSettings();
 	UFUNCTION()
 	void ApplySettings();
 	

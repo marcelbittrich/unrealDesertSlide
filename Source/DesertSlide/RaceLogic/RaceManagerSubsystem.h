@@ -55,7 +55,7 @@ public:
 	void UpdatePersonalBestTimeUI();
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE float GetStartCountdownTime() const {return StartCountdownTime;};
+	FORCEINLINE float GetStartCountdownTime() const {return StartCountdownTime;}
 	
 private:
 	
