@@ -42,9 +42,6 @@ public:
 
 	UFUNCTION()
 	virtual void StartRace() override;
-
-	UFUNCTION()
-	virtual void HandlePlayerReadyChange(bool bReady) override;
 	
 	UFUNCTION()
     virtual void HandleFollowCamChange(bool bFollowCam) override;

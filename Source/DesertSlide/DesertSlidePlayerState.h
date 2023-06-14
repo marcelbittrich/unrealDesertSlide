@@ -13,15 +13,10 @@ UCLASS()
 class DESERTSLIDE_API ADesertSlidePlayerState : public APlayerState
 {
 	GENERATED_BODY()
-
-public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	void SetReadyToRace(bool bReady);
-	bool GetReadyToRace() const {return bReadyToRace;}
-
-	UPROPERTY(Replicated)
-	bool bReadyToRace;	
 	
-private:
+public:
+	UPROPERTY(Replicated)
+	bool bReadyToRace = false;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -15,7 +15,8 @@ class DESERTSLIDE_API ADesertSlidePlayerController : public APlayerController
 	GENERATED_BODY()
 	
 private:
-	
+	UPROPERTY()
+	TArray<struct FPlayerData> LocalPlayerReadinessStates;
 	
 public:
 	void SetPlayerEnabledState(bool bPlayerEnabled);
@@ -34,4 +35,13 @@ public:
 	float AutoRotateMinVelocity = 200;
 	UPROPERTY(EditAnywhere)//, meta  = (ClampMin = "0", ClampMax = "1.0", UIMin = "0", UIMax = "1.0"))
 	float AutoRotateInterpSpeed = 0.9f;
+
+	UFUNCTION(BlueprintCallable)
+	void FlipReadyToRace();
+
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void Server_SetReadyToRace();
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceivePlayerStates(const TArray<struct FPlayerData>& PlayerReadinessStates);
 };

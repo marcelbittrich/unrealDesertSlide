@@ -27,7 +27,7 @@ public:
 	virtual void GoToMainMenu() = 0;
 	virtual void RestartLevel() = 0;
 	virtual void StartRace() = 0;
-	virtual void HandlePlayerReadyChange(bool bReady) = 0;
+	//virtual void HandlePlayerReadyChange(bool bReady) = 0;
 	virtual void HandleFollowCamChange(bool bFollowCam) = 0;
 	virtual void RefreshServerList() = 0;
 	virtual void Host(FString& ServerName) = 0;

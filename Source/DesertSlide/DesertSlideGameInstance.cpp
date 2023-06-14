@@ -3,14 +3,12 @@
 
 #include "DesertSlideGameInstance.h"
 
-#include "DesertSlideGameState.h"
 #include "DesertSlidePlayerController.h"
 #include "DesertSlideSaveGame.h"
 #include "MainMenu.h"
 #include "MenuWidget.h"
 #include "RaceManagerSubsystem.h"
 #include "Blueprint/UserWidget.h"
-#include "GameFramework/GameState.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "OnlineSubsystem.h"
@@ -131,25 +129,6 @@ void UDesertSlideGameInstance::StartRace()
 		LoadMapSaveGame();
 		RaceManager->InitializeRace();
 	}
-}
-
-void UDesertSlideGameInstance::HandlePlayerReadyChange(bool bReady)
-{
-	// TODO: Rework Player Ready Communication
-	
-	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (!PlayerController) return;
-	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerReadyChange got Player Controller"));
-	
-	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
-	if (!GameMode) return;
-	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerReadyChange got Game Mode"));
-	
-	ADesertSlideGameState* GameState = GameMode->GetGameState<ADesertSlideGameState>();
-	if (!GameState) return;
-	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerReadyChange got Game State"));
-	
-	GameState->ChangePlayerReady(PlayerController, bReady);
 }
 
 void UDesertSlideGameInstance::HandleFollowCamChange(bool bFollowCamChange)

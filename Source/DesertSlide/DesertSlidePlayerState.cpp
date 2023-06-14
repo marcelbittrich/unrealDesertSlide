@@ -9,13 +9,5 @@ void ADesertSlidePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(ADesertSlidePlayerState, bReadyToRace, COND_SkipOwner);
-}
-
-void ADesertSlidePlayerState::SetReadyToRace(bool bReady)
-{
-	if(HasAuthority())
-	{
-		bReadyToRace = bReady;
-	}
+	DOREPLIFETIME(ADesertSlidePlayerState, bReadyToRace);
 }

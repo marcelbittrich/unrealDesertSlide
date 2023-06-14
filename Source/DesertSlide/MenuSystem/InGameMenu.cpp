@@ -44,7 +44,7 @@ void UInGameMenu::HandleReadyToRaceChange(bool bReady)
 {
 	if(MenuInterface)
 	{
-		MenuInterface->HandlePlayerReadyChange(bReady);
+		//MenuInterface->HandlePlayerReadyChange(bReady);
 	}
 }
 
