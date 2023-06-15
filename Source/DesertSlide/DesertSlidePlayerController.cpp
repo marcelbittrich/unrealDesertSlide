@@ -29,11 +29,22 @@ void ADesertSlidePlayerController::Tick(float DeltaSeconds)
 		AutoRotateCamera(DeltaSeconds);
 	}
 	
-	int i = 0;
-	for (FPlayerData& PlayerData : LocalPlayerReadinessStates)
+	ADesertSlideGameState* GameState = Cast<ADesertSlideGameState>(GetWorld()->GetGameState());
+	if (!GameState)
 	{
-		FString ReadyMessage = PlayerData.ReadyToRace ? FString("ready") : FString("not ready");
-		FString DebugMessage = PlayerData.Name + " is " + ReadyMessage;
+		UE_LOG(LogTemp, Warning, TEXT("No GameState"));
+		return;
+	}
+	
+	TArray<TObjectPtr<APlayerState>> AllPlayers = GameState->PlayerArray;
+	int i = 0;
+	for (TObjectPtr<APlayerState> PlayerData : AllPlayers)
+	{
+		ADesertSlidePlayerState* DesertSlidePlayerState = Cast<ADesertSlidePlayerState>(PlayerData);
+		if (!DesertSlidePlayerState) continue;
+		
+		FString ReadyMessage = DesertSlidePlayerState->bReadyToRace ? FString("ready") : FString("not ready");
+		FString DebugMessage = DesertSlidePlayerState->GetName() + " is " + ReadyMessage;
 		GEngine->AddOnScreenDebugMessage(++i,-1, FColor::Green, *DebugMessage);
 	}
 }
@@ -89,14 +100,3 @@ bool ADesertSlidePlayerController::Server_SetReadyToRace_Validate()
 {
 	return true;
 }
-
-void ADesertSlidePlayerController::ClientReceivePlayerStates_Implementation(const TArray<FPlayerData>& PlayerReadinessStates)
-{
-	LocalPlayerReadinessStates = PlayerReadinessStates;
-	
-	for (const FPlayerData& PlayerData : PlayerReadinessStates)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ClientController: %s is %s"), *PlayerData.Name, PlayerData.ReadyToRace ? *FString("ready") : *FString("not ready"));
-	}
-}
-

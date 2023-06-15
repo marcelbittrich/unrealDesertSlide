@@ -30,11 +30,6 @@ void ADesertSlideGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 	UE_LOG(LogTemp, Warning, TEXT("Logout"));
-
-	if (ADesertSlideGameState* DesertGameState = GetGameState<ADesertSlideGameState>())
-	{
-		DesertGameState->RemovePlayerData(Exiting);
-	}
 }
 
 void ADesertSlideGameMode::CheckAllPlayersReadyState()
