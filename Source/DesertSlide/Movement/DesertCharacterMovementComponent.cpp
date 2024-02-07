@@ -105,7 +105,6 @@ FNetworkPredictionData_Client* UDesertCharacterMovementComponent::GetPredictionD
 
 UDesertCharacterMovementComponent::UDesertCharacterMovementComponent()
 {
-
 }
 
 void UDesertCharacterMovementComponent::InitializeComponent()
