@@ -2,7 +2,7 @@
 
 ![EntryDesertSlide](https://github.com/marcelbittrich/unrealDesertSlide/assets/113523293/8cd567b3-4611-4de7-92c3-f42ce838a047)
 
-🕹️☀️ Two months unreal engine game project
+🕹️☀️ Two months unreal engine game project. [More Information](https://www.marcelbittrich.xyz/home/desert-slide)
 
 ## Description
 
